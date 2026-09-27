@@ -5,6 +5,13 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Added
+- `uehaj` 0.3.0: `run-interactive`. A command that needs a human at the keyboard (`rm -i`, `git commit -p`,
+  `git rebase -i`, an ssh password) runs in a herdr side pane wrapped in `script`, focus goes to the human,
+  and `run-interactive.sh wait` returns when the wrapped command exits, with its exit code and the full log, keystrokes
+  included. Run `wait` in the background and Claude resumes the moment the human answers, no "done" needed.
+  Claude never answers a prompt itself. The log outlives the pane, so it can be collected after the shell exits.
+
 ### Changed
 - `sys1grep`: a known identifier, exception name or fixed string no longer sends Claude back to Grep. It goes into a
   regex term, `-e '/RE/' -a "meaning"`, which is matched locally with no request, so only the lines it holds for are

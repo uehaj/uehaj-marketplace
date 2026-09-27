@@ -26,6 +26,7 @@ npx skills add uehaj/uehaj-marketplace --skill sys1grep -a claude-code -g
 |---|---|---|
 | `/uehaj:sys1grep <meaning> [files]` | grep by meaning, with sys1grep 0.5.0-next.0 (the renamed semgrep): the same, plus git commits (`-g`) and auto-scope by time, language, place, author and git state. | [`@uehaj/sys1grep@0.5.0-next.0`](https://github.com/uehaj/sys1grep), run through `npx`, and a TypeSafe API key |
 | `/uehaj:semgrep <meaning> [files]` | grep by meaning. Finds lines that match a described meaning, in any language, with AND / OR / NOT. | [`@uehaj/semgrep`](https://github.com/uehaj/jev-semgrep) (`npm install -g @uehaj/semgrep`, or the skill falls back to `npx`) and a TypeSafe API key |
+| `/uehaj:run-interactive <command>` | runs a command that needs a human at the keyboard (`rm -i`, `git commit -p`, `git rebase -i`, an ssh login) in a herdr side pane wrapped in `script`, hands focus to the human, and when they finish collects the exit code and the full log, their keystrokes included. Claude's Bash tool cannot take interactive input; this is the way round it. Model-invoked. | [herdr](https://herdr.dev) (`HERDR_ENV=1`), `script`, `python3` |
 
 ## Playground
 
