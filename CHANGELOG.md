@@ -5,6 +5,12 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Changed
+- `sys1grep`: a known identifier, exception name or fixed string no longer sends Claude back to Grep. It goes into a
+  regex term, `-e '/RE/' -a "meaning"`, which is matched locally with no request, so only the lines it holds for are
+  asked the meaning; fewer lines sent and fewer read than Grep-then-Read. On SWE-bench Verified (30 issues, 37 runs)
+  the previous wording never fired, because every issue names an identifier.
+
 ### Added
 - `uehaj` 0.2.0: `sys1grep`, beside `/uehaj:semgrep`. It runs `@uehaj/sys1grep@0.5.0-next.0` (the renamed
   semgrep) through `npx`. Unlike `semgrep` it is model-invoked: Claude reaches for it on its own when a question
