@@ -5,6 +5,12 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Changed
+- `sys1grep`: the regex and the meaning go in the same term. `-e '/RE/' -Q "…"` are two OR terms, so the regex
+  narrows nothing and the `-Q` term sends the whole tree (43.7M tokens in one SWE-bench run); the skill now says
+  `-Q "question" -a '/RE/'` and a `--dry-run` first for a regex-less term under `-r`. A rerun never repeats the
+  same command: exit 1 is "no match", not a transient error.
+
 ### Added
 - `uehaj`: `/uehaj:ri`, a short alias for `/uehaj:run-interactive`. Claude Code has no alias key in a
   skill's frontmatter, so the alias is a command file that invokes the skill with `$ARGUMENTS`.
