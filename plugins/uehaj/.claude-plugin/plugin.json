@@ -1,6 +1,6 @@
 {
   "name": "uehaj",
-  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep. herdr-hitl: runs rm -i, git commit -p / rebase -i or an ssh login in a herdr side pane under script, hands the keyboard to the human, and collects exit code and log when they finish.",
+  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep. run-interactive: runs rm -i, git commit -p / rebase -i or an ssh login in a herdr side pane under script, hands the keyboard to the human, and collects exit code and log when they finish.",
   "version": "0.3.0",
   "author": {
     "name": "Junji UEHARA",
@@ -15,6 +15,6 @@
     "semantic-search",
     "grep",
     "herdr",
-    "human-in-the-loop"
+    "interactive-shell"
   ]
 }

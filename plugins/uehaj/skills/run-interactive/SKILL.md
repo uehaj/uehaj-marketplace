@@ -1,9 +1,9 @@
 ---
-name: herdr-hitl
+name: run-interactive
 description: 対話入力が要るコマンド（rm -i、git commit -p / rebase -i / add -p、ssh のパスワード、対話インストーラ、REPL）を herdr の別ペインで script 記録つきで起動し、人間に答えさせてから結果を取り込む。Bash ツールでは対話入力を扱えないので、y/n やエディタ操作が発生するコマンドはこのスキルで人間に渡す。HERDR_ENV=1 のときだけ使える。
 ---
 
-# herdr-hitl — 人間に入力させる対話コマンド
+# run-interactive — 対話コマンドを別ペインで人間に渡す
 
 `HERDR_ENV` が `1` でなければ herdr の外なので使えない。その旨を言って止まる。
 
@@ -17,8 +17,8 @@ description: 対話入力が要るコマンド（rm -i、git commit -p / rebase 
 1. 起動。ペインを右に分割し、`script` で包んで実行し、フォーカスを人間側に渡す。
 
    ```bash
-   bash "$SKILL_DIR/hitl.sh" start --prompt 'remove .*\?' -- rm -i junk.txt
-   # → PANE=w7W:p7 LOG=/…/workdir/hitl-20260927-2030.log
+   bash "$SKILL_DIR/run-interactive.sh" start --prompt 'remove .*\?' -- rm -i junk.txt
+   # → PANE=w7W:p7 LOG=/…/workdir/run-interactive-20260927-2030.log
    ```
 
    `--prompt` は「入力待ちになった」と判断する正規表現。エディタが開く `rebase -i` のように
@@ -28,7 +28,7 @@ description: 対話入力が要るコマンド（rm -i、git commit -p / rebase 
    コマンドが終了し、Claude が自動で再開される。人間に「終わったら教えて」と頼む必要はない。
 
    ```bash
-   bash "$SKILL_DIR/hitl.sh" wait w7W:p7 "$LOG"
+   bash "$SKILL_DIR/run-interactive.sh" wait w7W:p7 "$LOG"
    # 終了時の出力:
    # EXIT=0
    # --- log ---
@@ -41,7 +41,7 @@ description: 対話入力が要るコマンド（rm -i、git commit -p / rebase 
 4. 再開したら、`wait` の出力（exit code と人間の入力込みの全記録）を読んで続行し、
    `herdr pane close w7W:p7` で閉じる。
 
-   途中で様子を見たいときは `hitl.sh status <pane>`（`running` / `done`）と
+   途中で様子を見たいときは `run-interactive.sh status <pane>`（`running` / `done`）と
    `herdr pane read <pane> --source visible --lines 20`。
 
 ## 知っておくこと

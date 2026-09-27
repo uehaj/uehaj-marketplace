@@ -1,9 +1,9 @@
 #!/bin/bash
 # herdr の別ペインで対話コマンドを script 記録つきで起動し、人間の入力に任せる。
-#   hitl.sh start [--prompt REGEX] [--log FILE] -- <command...>   → "PANE=<id> LOG=<file>" を出力
-#   hitl.sh wait <pane> <log>                                      → 終了まで待ち、exit code と記録本文を出力
-#   hitl.sh status <pane>                                          → running | done
-#   hitl.sh log <file>                                             → ANSI/CR を除いた記録本文
+#   run-interactive.sh start [--prompt REGEX] [--log FILE] -- <command...>   → "PANE=<id> LOG=<file>" を出力
+#   run-interactive.sh wait <pane> <log>                                      → 終了まで待ち、exit code と記録本文を出力
+#   run-interactive.sh status <pane>                                          → running | done
+#   run-interactive.sh log <file>                                             → ANSI/CR を除いた記録本文
 set -euo pipefail
 
 jq_py() { python3 -c "import sys,json; print($1)"; }
@@ -20,11 +20,11 @@ start)
     esac
   done
   cmd="$*"
-  log=${log:-$PWD/workdir/hitl-$(date +%Y%m%d-%H%M%S).log}
+  log=${log:-$PWD/workdir/run-interactive-$(date +%Y%m%d-%H%M%S).log}
   mkdir -p "$(dirname "$log")"
   self=$(herdr pane current | jq_py 'json.load(sys.stdin)["result"]["pane"]["pane_id"]')
   pane=$(herdr pane split "$self" --direction right | jq_py 'json.load(sys.stdin)["result"]["pane"]["pane_id"]')
-  q=$(printf %q "$cmd; echo HITL_EXIT=\$?")   # ; や引用符を含んでも 1 つのコマンド列として渡し、終了マーカーを出す
+  q=$(printf %q "$cmd; echo RI_EXIT=\$?")   # ; や引用符を含んでも 1 つのコマンド列として渡し、終了マーカーを出す
   if [ "$(uname -s)" = Darwin ]; then wrapped="script -q $log bash -c $q"; else wrapped="script -q -c $q $log"; fi
   herdr pane run "$pane" "cd $PWD && $wrapped"
   if [ -n "$prompt" ]; then
@@ -35,10 +35,10 @@ start)
   echo "PANE=$pane LOG=$log"
   ;;
 wait)
-  herdr pane wait-output "$2" --regex 'HITL_EXIT=[0-9]+' --source recent-unwrapped >/dev/null
-  code=$(herdr pane read "$2" --source recent-unwrapped --lines 200 | grep -o 'HITL_EXIT=[0-9]*' | tail -1 | cut -d= -f2)
+  herdr pane wait-output "$2" --regex 'RI_EXIT=[0-9]+' --source recent-unwrapped >/dev/null
+  code=$(herdr pane read "$2" --source recent-unwrapped --lines 200 | grep -o 'RI_EXIT=[0-9]*' | tail -1 | cut -d= -f2)
   sleep 0.5   # script がログを閉じるのを待つ
-  echo "EXIT=$code"; echo "--- log ---"; bash "$0" log "$3" | sed '/^HITL_EXIT=/d'
+  echo "EXIT=$code"; echo "--- log ---"; bash "$0" log "$3" | sed '/^RI_EXIT=/d'
   ;;
 status)
   herdr pane process-info --pane "$2" \

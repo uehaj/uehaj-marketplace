@@ -11,7 +11,7 @@
     {
       "name": "uehaj",
       "source": "./plugins/uehaj",
-      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize), /uehaj:semgrep (the older @uehaj/semgrep), and herdr-hitl (run an interactive command in a herdr side pane under script, let the human answer, collect the log)",
+      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize), /uehaj:semgrep (the older @uehaj/semgrep), and run-interactive (run an interactive command in a herdr side pane under script, let the human answer, collect the log)",
       "version": "0.3.0",
       "author": {
         "name": "Junji UEHARA"
@@ -27,7 +27,7 @@
         "jev",
         "herdr",
         "interactive",
-        "human-in-the-loop"
+        "interactive-shell"
       ]
     },
     {
