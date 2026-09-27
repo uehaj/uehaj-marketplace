@@ -6,6 +6,8 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `uehaj`: `/uehaj:ri`, a short alias for `/uehaj:run-interactive`. Claude Code has no alias key in a
+  skill's frontmatter, so the alias is a command file that invokes the skill with `$ARGUMENTS`.
 - `uehaj` 0.3.0: `run-interactive`. A command that needs a human at the keyboard (`rm -i`, `git commit -p`,
   `git rebase -i`, an ssh password) runs in a herdr side pane wrapped in `script`, focus goes to the human,
   and `run-interactive.sh wait` returns when the wrapped command exits, with its exit code and the full log, keystrokes
