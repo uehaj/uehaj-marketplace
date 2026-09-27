@@ -11,14 +11,15 @@
     {
       "name": "uehaj",
       "source": "./plugins/uehaj",
-      "description": "Skills by uehaj: /uehaj:semgrep (grep by meaning, via @uehaj/semgrep)",
-      "version": "0.1.7",
+      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize) and /uehaj:semgrep (the older @uehaj/semgrep)",
+      "version": "0.2.0",
       "author": {
         "name": "Junji UEHARA"
       },
       "homepage": "https://github.com/uehaj/uehaj-marketplace",
       "license": "MIT",
       "keywords": [
+        "sys1grep",
         "semgrep",
         "semantic-search",
         "grep",

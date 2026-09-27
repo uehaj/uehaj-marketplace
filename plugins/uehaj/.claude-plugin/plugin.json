@@ -1,7 +1,7 @@
 {
   "name": "uehaj",
-  "description": "Skills by uehaj. /uehaj:semgrep searches files by meaning with @uehaj/semgrep (TypeSafe Jev).",
-  "version": "0.1.7",
+  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep.",
+  "version": "0.2.0",
   "author": {
     "name": "Junji UEHARA",
     "url": "https://github.com/uehaj"
@@ -10,6 +10,7 @@
   "repository": "https://github.com/uehaj/skills",
   "license": "MIT",
   "keywords": [
+    "sys1grep",
     "semgrep",
     "semantic-search",
     "grep"

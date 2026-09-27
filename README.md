@@ -14,16 +14,17 @@ Update later with `claude plugin marketplace update uehaj-marketplace`.
 
 To install a single skill instead of the whole plugin, use the [skills CLI](https://skills.sh/).
 It copies the skill into `~/.claude/skills/` (with `-g`) or `./.claude/skills/`, and the skill is then
-invoked without the plugin prefix (`/semgrep` instead of `/uehaj:semgrep`).
+invoked without the plugin prefix (`/sys1grep` instead of `/uehaj:sys1grep`).
 
 ```sh
-npx skills add uehaj/uehaj-marketplace --skill semgrep -a claude-code -g
+npx skills add uehaj/uehaj-marketplace --skill sys1grep -a claude-code -g
 ```
 
 ## Skills
 
 | Skill | What it does | Needs |
 |---|---|---|
+| `/uehaj:sys1grep <meaning> [files]` | grep by meaning, with sys1grep 0.5.0-next.0 (the renamed semgrep): the same, plus git commits (`-g`) and auto-scope by time, language, place, author and git state. | [`@uehaj/sys1grep@0.5.0-next.0`](https://github.com/uehaj/sys1grep), run through `npx`, and a TypeSafe API key |
 | `/uehaj:semgrep <meaning> [files]` | grep by meaning. Finds lines that match a described meaning, in any language, with AND / OR / NOT. | [`@uehaj/semgrep`](https://github.com/uehaj/jev-semgrep) (`npm install -g @uehaj/semgrep`, or the skill falls back to `npx`) and a TypeSafe API key |
 
 ## Playground

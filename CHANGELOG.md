@@ -6,6 +6,14 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `uehaj` 0.2.0: `sys1grep`, beside `/uehaj:semgrep`. It runs `@uehaj/sys1grep@0.5.0-next.0` (the renamed
+  semgrep) through `npx`. Unlike `semgrep` it is model-invoked: Claude reaches for it on its own when a question
+  is about meaning rather than a known string (why did it fail, which commit changed X, where is the key read),
+  in place of Grep or reading the whole file. It chooses the deliverable first: `--summarize -Q` for an answer
+  (the lines never enter Claude's context), `-n` for locations, and reads only `-C` context or a `sed -n` range
+  afterwards. Covers `-g` for git commits, `--dedup` for machine logs, regex prefilters and auto-scope. Measured on
+  this repository's git log (1,242 lines): 33,152 input tokens and $0.070 reading it whole, 1,272 tokens and $0.005
+  through sys1grep, same answer. Key from `SYS1GREP_API_KEY` or `~/.config/sys1grep/.env`. `/uehaj:semgrep` is unchanged.
 - `playground` 0.1.0: function-hook experiments drawing in a pane. `/img` shows a PNG, `/mandel`
   draws the Mandelbrot set, both through the terminal surface's `Image` element.
 
