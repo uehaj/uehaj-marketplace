@@ -1,6 +1,6 @@
 {
   "name": "uehaj",
-  "description": "Skills by uehaj. /uehaj:sys1grep searches files and git commits by meaning with @uehaj/sys1grep 0.5.0-next.0 (TypeSafe Jev); /uehaj:semgrep is the same with the older @uehaj/semgrep.",
+  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep.",
   "version": "0.2.0",
   "author": {
     "name": "Junji UEHARA",

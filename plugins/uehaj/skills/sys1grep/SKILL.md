@@ -1,87 +1,49 @@
 ---
 name: sys1grep
-description: 意味で行を探す grep（@uehaj/sys1grep 0.5.0-next.0、旧 semgrep）でファイル・ログ・git のコミットから該当行を示す。/uehaj:sys1grep <探したい意味> [対象] [sys1grep のオプション]（skills CLI で入れた場合は /sys1grep）
-disable-model-invocation: true
+description: ログ・チケット・文書・ソース・git のコミットから、語ではなく意味で行を探す grep（sys1grep、TypeSafe Jev）。「なぜ失敗したか」「顧客が怒っている問い合わせ」「API キーを読んでいる箇所」「〜を変えたコミット」のように、検索語が決まらない・言い換えや否定や多言語を含む・答えが数行に収まる問いで、Grep や全文読みの前に使う。対象を丸ごと読まずに済ませてトークンを節約するのが目的。識別子や固定文字列が分かっているなら Grep ツール。手で呼ぶなら /uehaj:sys1grep <意味> [対象] [オプション]。
 ---
 
-# /uehaj:sys1grep — 意味で探す
+# sys1grep — 意味で絞り、当たりだけ読む
 
-`sys1grep`（TypeSafe Jev で 1 行ずつ「この意味に合うか」の確率を出す grep。旧名 semgrep。
-https://github.com/uehaj/sys1grep ）を使って、ユーザーの言葉で示された意味に合う行を探し、結果を示す。
+対象をコンテキストに入れる前に、Jev（安い判定モデル）に行を絞らせ、既定では `--summarize` で haiku に要約まで
+させる。自分のコンテキストに入るのは要約だけ。実測（git log 1,242 行、「なぜ ./.env を読まなくなったか」）:
+直読み 33,152 トークン・$0.070、絞った 7 行 1,272 トークン・$0.005、答えは同じ。
+節約はツール呼び出しの回数で決まる。1 回の呼び出しごとにコンテキスト全体を読み直すので、sys1grep は 1 回走らせて
+その出力で答える。同じ検索を `head` / `tail` / `wc` で分けて走らせない。出力が長いのは式が緩いか `--summarize` の出番。
 
-コマンドは版を固定して `npx -y @uehaj/sys1grep@0.5.0-next.0` で呼ぶ（以下の例の `sys1grep` はすべてこれに読み替える）。
-PATH の `sys1grep` や旧 `semgrep` は版が違うことがあるので使わない。
-API キーは環境変数 `SYS1GREP_API_KEY`（無ければ `TYPESAFE_API_KEY`）か `~/.config/sys1grep/.env` から読まれる。
-`./.env` は読まれない。旧 `SEMGREP_*` と `~/.config/semgrep/.env` も 0.5 の間は読まれるが、使うたびに移行を促す 1 行が出る。
-キー未設定のエラーが出たら `sys1grep --help` 末尾の設定手順をそのまま示して止まる。
-
-**検索した行はすべて TypeSafe の API に送られる。** 対象に秘密情報や社外秘が含まれそうなら、実行前にその旨を 1 行添える。
+- コマンドは `npx -y @uehaj/sys1grep@0.5.0-next.0`（以下 `sys1grep`）。PATH の `sys1grep` / 旧 `semgrep` は版が違いうる。
+- キーは `SYS1GREP_API_KEY` か `~/.config/sys1grep/.env`。`./.env` は読まれない。未設定エラーは `sys1grep --help` 末尾の手順を示して止まる。
+- 検索した行は TypeSafe へ、`--summarize` では当たった行が Anthropic へも送られる。秘密や社外秘を含みそうな対象は、実行前にその旨を 1 行断る。
+- 損益分岐は約 50 行。対象がそれ未満なら直読み。マッチ後にどのみち全体を読むタスク（設計の把握、概要図）には使わない。
+- `/uehaj:sys1grep` で呼ばれたときは `$ARGUMENTS` が意味・対象・オプション。`-` で始まる語と `-e/-a/-v` の式はそのまま渡す。
 
 ## 手順
 
-1. **引数を読む。** `$ARGUMENTS` は「探したい意味」と、あれば「対象」（ファイル、glob、ディレクトリ、git のコミット、
-   またはコマンド出力）、それに sys1grep のオプション。`-` で始まる語（`-r`、`-g`、`-C 2`、`--level strict`、`-p`、`-c`、
-   `-l` など）とその値は、解釈せずそのまま渡す。ユーザーが `-e` / `-a` / `-v` を自分で書いていれば式もそのまま使い、
-   手順 2 は飛ばす。対象が無ければ会話の文脈から決め、決められなければ聞く。ディレクトリ全体は行ごとに課金されるので、
-   `package-lock.json` や大きな生成物・ログは外し、文書やソースなど意味のあるファイルに絞る。
-   **使う前に効果を見積もる。** sys1grep が安くて速いのは、次の 3 つが揃うときだけ（実測: 51 行で直読みの 2/3 の費用・時間、
-   14 行では割高。損益分岐はおよそ 50 行）。
+1. **成果物を決める。** 既定は `--summarize`。
+   - 答え（理由、事実、「どれ」「挙げて」、一覧、要約）→ `--summarize -Q "question"`。`-Q` は「問いに答えている行」、
+     `-e` は「〜という記述」。出力は要約だけで、行は自分のコンテキストに入らない。
+   - 場所（ユーザーがその行を開く・直す、または行番号や原文を求めている）→ `-n`。前後が要るときだけ `-C 2`。
+   - 有無・件数・ファイル名 → `-q` / `-c` / `-l`。
+2. **対象を決める。** ディレクトリは `-r`（.git、node_modules、鍵、.gitignore 対象は自動で除外）。
+   コミットは `-g`（1 コミット 1 レコード。`git log | …` のパイプは要らない。ファイル名は pathspec）。
+   機械が吐くログは `--dedup`（ID・数値・時刻だけ違う行を 1 回で判定）。NUL 区切りのレコードは `-z`。
+   JSONL のような巨大行は `jq` で 1 件 1 行にしてから。
+3. **式を組む。** 意味は英語（精度が最も安定）。OR `-e A -e B`、AND `-e A -a B`、AND NOT `-e A -v B`。1 意味 1 条件。
+   時期・言語や拡張子・置き場所・作者・git の状態は意味の中に書く（`-r`/`-g` の auto-scope が対象を先に絞る）。
+   語が分かる部分は `-e '/RE/i' -a "meaning"` で先にローカルで絞り、送る行を減らす。
+4. **1 回実行し、判定する。** Bash の `timeout` は 300000 にする（`--summarize` は 10〜60 秒、ネストした Claude の中では
+   さらに長い）。バックグラウンドに回されたら出力ファイルを待って読む。再実行は最大 1 回。意味に合わない行が混じる → `--level strict`。空 → `--level loose`、それでも空なら「該当なし」。
+   stderr の `sys1grep: scope:` が意図と違う → `--no-auto-scope` か `--include` / `--changed-within` で明示。終了コード 2 は stderr をそのまま示す。
+5. **読む・報告する。** 当たった後に対象全体を開かない（開けば節約はゼロ）。要約に日付・順序・原文が足りなければ
+   同じ式を `-n` で 1 回走らせて当たり行を取り、足りない箇所は `sed -n 'A,Bp'` の行範囲だけ。
+   報告は行（`file:line`、`-g` ならハッシュと件名）か要約をそのまま、使った式と効いた scope を 1 行。
 
-   - **マッチした行を見た後で、対象全体を読まずに済むと予想できる。** 「意味に合う行を抜き出す」タスクはこれに当たる。
-     対象を読んで理解し何かを書くタスク（概要図、要約、設計の把握）は当たらない。sys1grep で当たりをつけても
-     結局全体を読むので、その分がまるごと上乗せになる（1,900 行のコード概要図で費用 1.5 倍）。
-   - 語彙で絞れない。`grep -iE 'release|publish|tag'` のように語が予想できるなら grep で絞って読む方が同等の精度で安い。
-     多言語の文、否定条件（「〜ではない」）、言い換えの多い意味だけが sys1grep の出番。
-   - 対象が数十行を超える。数十行以下なら直読みの方が安い。
+```sh
+sys1grep -g --summarize -Q "why is ./.env no longer read"
+sys1grep -r -n --dedup -e '/ERROR|FATAL/' -a "a customer-facing request failed" logs/
+sys1grep -r -n -e "the API key is read from a file, in the source code" .
+sys1grep -n -C 2 -e "customer is asking for a refund" -v "the refund was already issued" tickets/*.txt
+```
 
-   揃わないときは sys1grep を使わず、直読みか grep で答え、そうした理由を 1 行添える。
-   揃っていても、**マッチした後に対象全体を開いてしまえば節約はゼロになる。** 周辺が要るときは `-C N` で
-   前後だけを読み、それでも足りない箇所だけ `sed -n` で行範囲を指定して読む。
-   また対象が JSONL のような巨大行なら、どの方式でも先に 1 件 1 行に抜き出す前処理が要る。
-
-2. **意味を式に組む。** 意味は英語で書く（精度が最も安定する。ユーザーが日本語で言っても英訳してよい）。
-   「A または B」は `-e A -e B`、「A かつ B」は `-e A -a B`、「A だが B でない」は `-e A -v B`。
-   1 つの意味に複数の条件を詰め込まず、条件ごとに `-e/-a/-v` に分ける。
-   時期（today, yesterday, last week）・言語や拡張子（Python, `.mjs`）・場所（test code, README, docs）・作者・
-   git の状態（uncommitted, this branch）は、意味の中に書いてよい。`-r` と `-g` では auto-scope が Jev に聞いて
-   その条件で対象を先に絞り、判定のリクエストにもその条件を満たしていると添える。
-   ただし auto-scope が効くのは項が 1 つのとき（`-g`）か、項ごと（`-r`）。条件と中身は同じ `-e` に書く。
-3. **実行する。** 常に `-n` を付ける。複数ファイルやディレクトリなら `-r`。前後が要る依頼なら `-C 2`。
-   コミットを探すなら、パイプではなく `-g` を使う（1 コミット 1 レコード。ハッシュ・日付・件名・本文）。
-   例:
-
-   ```sh
-   npx -y @uehaj/sys1grep@0.5.0-next.0 -n -e "customer is asking for a refund" -v "the refund was already issued" tickets/*.txt
-   npx -y @uehaj/sys1grep@0.5.0-next.0 -r -n -e "test code changed yesterday that retries a request" .
-   npx -y @uehaj/sys1grep@0.5.0-next.0 -g -e "a performance fix to the .mjs files today"
-   ```
-
-   `-g` は `-r` と一緒に使えない。ファイル名を付けると git log の pathspec になる（`-g -e "…" src/`）。
-   コミットは `-Q`（問いへの答え）より `-e`（〜をした記述）の方が当たりやすい。
-   stderr の `sys1grep: scope: …` と `sys1grep: git log …` の行が、auto-scope で絞った条件。
-
-4. **結果を判定する。** 出力の各行を読み、意味に合っていない行が混ざっていれば `-p` を付けて確率を確かめ、
-   `--level strict` で再実行する。何も出なければ `--level loose` で再実行し、それでも無ければ「該当なし」と伝える。
-   絞り込みが外れていそうなら（stderr の scope 行が意図と違う）`--verbose` で候補と答えを見て、
-   `--no-auto-scope` か `--include` / `--changed-within` で明示して再実行する。
-   終了コード 2 はエラーなので stderr をそのまま示す。
-5. **報告する。** `file:line:` 付きの該当行（`-g` ならコミットのハッシュと件名）をそのまま示し、件数と、
-   使った式と、効いた scope を 1 行添える。
-   ユーザーが次に打てるコマンドを 1 つ提案する（`-C` で文脈、`-l` でファイル名だけ、`-c` で件数、など）。
-
-完了条件: 該当行が `file:line` 付き（`-g` ならコミット付き）で示されているか、「該当なし」と根拠（式・閾値・scope）が示されている。
-
-## オプション早見
-
-`sys1grep --help` が正。ここは式の組み方と対象の選び方に関わるものだけ。
-
-| 目的 | オプション |
-|---|---|
-| OR / AND / AND NOT | `-e A -e B` / `-e A -a B` / `-e A -v B`。`'!B'` は個別否定 |
-| 取りこぼしを減らす / 確実な行だけ | `--level loose` / `--level strict`（`-t` `-T` で個別指定） |
-| 確率を見る / 絞り込みの中身を見る | `-p` / `--verbose` |
-| 文脈 / ファイル名だけ / 件数 | `-C N` / `-l` / `-c` |
-| 再帰 | `-r`（.git、node_modules、.env や鍵、.gitignore の対象は自動で除外） |
-| git のコミットを探す | `-g`（auto-scope が `--since` / pathspec / `--author` / 範囲になる） |
-| 意味から対象を絞らない | `--no-auto-scope` |
-| 送る前に件数と費用を見る | `--dry-run`、または `-i`（見せてから聞く） |
+完了条件: 要約か `file:line` 付きの行が示され、対象全体を開いておらず、sys1grep の実行が 2 回以内。
+または「該当なし」と式・閾値・scope が示されている。オプションはこの文書にあるもので足りる。

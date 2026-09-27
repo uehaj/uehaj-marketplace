@@ -11,7 +11,7 @@
     {
       "name": "uehaj",
       "source": "./plugins/uehaj",
-      "description": "Skills by uehaj: /uehaj:sys1grep (grep by meaning, via @uehaj/sys1grep 0.5.0-next.0) and /uehaj:semgrep (the same, via the older @uehaj/semgrep)",
+      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize) and /uehaj:semgrep (the older @uehaj/semgrep)",
       "version": "0.2.0",
       "author": {
         "name": "Junji UEHARA"
