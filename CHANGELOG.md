@@ -15,6 +15,21 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
   Claude never answers a prompt itself. The log outlives the pane, so it can be collected after the shell exits.
 
 ### Changed
+- `sys1grep`: the skill now fires on questions that ask for an interpretation ("what can be said from the WARN
+  lines", "any trend", "sum it up") and reads the hits through `--summarize` instead of reading them itself.
+  Measured against the previous wording on a 6,000-line log, 4 questions x 2 runs with Sonnet: the skill fired on
+  6 of 6 runs of the 3 questions it should serve (previously 2 of 6) and on none of the question that shell pipes
+  answer (a line count); mean cost per run fell by about 30% on the two interpretation / meaning questions and
+  stayed level on the other two. Also:
+  - for an interpretation of a whole set, pick the lines with a regex only (`--summarize --dedup -e '/WARN/'`): a
+    meaning is a filter, and adding one dropped the minority lines from the summary;
+  - `-a` / `-v` come after the `-e` or `-Q` they narrow;
+  - a failed command whose last error names only the symptom: pipe its output in and list hypotheses of the cause
+    (paused, switched, empty, fallback), with the symptom in `--summarize-prompt`, instead of asking why it failed;
+  - runs `@uehaj/sys1grep@0.5.0-next.1`, which has `--summarize-prompt`, `--summarize-format`, `--max-cost`, `-y`
+    and `--cached` (0.5.0-next.0 does not);
+  - drops the "about 50 lines" break-even: an answer through `--summarize` costs no more than reading a few dozen
+    lines.
 - `sys1grep`: a known identifier, exception name or fixed string no longer sends Claude back to Grep. It goes into a
   regex term, `-e '/RE/' -a "meaning"`, which is matched locally with no request, so only the lines it holds for are
   asked the meaning; fewer lines sent and fewer read than Grep-then-Read. On SWE-bench Verified (30 issues, 37 runs)
