@@ -5,7 +5,7 @@
 
 辺は永続化しない。埋め込んだ JS（DERIVE_JS）がブラウザで導く。テストは同じ JS を node で呼ぶ。
 """
-import argparse, json, os, re
+import argparse, json, os, re, shutil, subprocess, sys
 
 DEFAULT_BRANCH_RE = r"^issue-(\d+)-"
 
@@ -326,7 +326,7 @@ function detail(id) {
 }
 function rowHtml(id) {
   const it = item(id), v = it.v, prs = it.t === 'i' ? (implFrom[id] || []).filter(e => P[e.a]) : [];
-  return `<details id="n-${id}" data-n="${id}"><summary><span class="num">${ext(id)}</span>${stBadge(v)}` +
+  return `<details id="n-${esc(id)}" data-n="${esc(id)}"><summary><span class="num">${ext(id)}</span>${stBadge(v)}` +
     `<span class="meta">${it.t === 'i' ? 'issue' : 'PR'}</span><span class="ttl">${esc(v.t)}</span>` +
     (v.l || []).map(l => `<span class="lbl">${esc(l)}</span>`).join('') +
     (it.t === 'i' ? `<span class="meta">PR ${prs.length}</span>` : '') +
@@ -506,14 +506,33 @@ def render_html(data, branch_re):
     return re.sub(r"__(REPO|DATA|DERIVE|BRANCHRE_TEXT|BRANCHRE)__", lambda m: vals[m.group(1)], HTML)
 
 
+def check_branch_re(pattern):
+    """--branch-re はページの JS が new RegExp で評価する。node があれば同じ new RegExp で検査する。
+    Python の re は (?P<n>...) や (?i) を通すが、JS では Invalid group になりページが白紙になる。"""
+    node = shutil.which("node")
+    if node:
+        p = subprocess.run([node, "-e", "try { new RegExp(process.argv[1]) } catch (e) { console.error(e.message); process.exit(1) }",
+                            pattern], capture_output=True, text=True)
+        err = p.stderr.strip() if p.returncode else None
+    else:
+        try:
+            re.compile(pattern)
+            err = None
+        except re.error as e:
+            err = str(e)
+    if err:
+        sys.exit("--branch-re が JavaScript の正規表現として読めません: " + err)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", required=True, help="collect.py の出力")
     ap.add_argument("--out", required=True, help="書き出す HTML")
     ap.add_argument("--branch-re", default=DEFAULT_BRANCH_RE,
-                    help="PR の head ブランチ名から issue 番号を取る正規表現。1 番目のグループが番号（既定 %(default)s）")
+                    help="PR の head ブランチ名から issue 番号を取る JavaScript の正規表現（ページで new RegExp する）。"
+                         "1 番目のグループが番号（既定 %(default)s）")
     a = ap.parse_args()
-    re.compile(a.branch_re)
+    check_branch_re(a.branch_re)
     with open(a.data, encoding="utf-8") as f:
         data = json.load(f)
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)

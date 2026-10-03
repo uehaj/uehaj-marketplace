@@ -3,7 +3,8 @@
 
 辺の導出はブラウザで動く JS（render.DERIVE_JS）にあるので、node で同じ JS を呼んで確かめる。
 """
-import json, os, re, shutil, subprocess, sys, tempfile, unittest
+import contextlib, io, json, os, re, shutil, subprocess, sys, tempfile, unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -128,6 +129,25 @@ class HtmlTest(unittest.TestCase):
             self.assertIn('value="%s"' % kind, self.html)
         self.assertIn('data-tab="table"', self.html)
         self.assertIn('data-tab="graph"', self.html)
+
+
+@unittest.skipUnless(NODE, "node が無いので JS の正規表現の検査を飛ばす")
+class BranchReTest(unittest.TestCase):
+    def main(self, branch_re, out):
+        argv = ["render.py", "--data", FIXTURE, "--out", out, "--branch-re", branch_re]
+        with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(io.StringIO()):
+            render.main()
+
+    def test_python_only_syntax_is_refused_before_writing(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "map.html")
+            for bad in (r"^issue-(?P<n>\d+)-", r"(?i)^issue-(\d+)"):
+                with self.subTest(bad=bad), self.assertRaises(SystemExit) as e:
+                    self.main(bad, out)
+                self.assertIn("JavaScript", str(e.exception.code))
+                self.assertFalse(os.path.exists(out))
+            self.main(r"^issue-(?<n>\d+)-", out)
+            self.assertTrue(os.path.exists(out))
 
 
 class EmbedJsonTest(unittest.TestCase):

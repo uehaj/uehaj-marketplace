@@ -5,7 +5,7 @@
 
 認証は gh に任せる（gh auth login 済みであること）。
 """
-import argparse, datetime, json, re, subprocess, sys
+import argparse, datetime, json, os, re, subprocess, sys
 
 SHA = 10   # cm / mc / rc / cs のキーはこの長さにそろえる。そろわないとコミットから PR を引けない
 PAGE = 50
@@ -44,15 +44,23 @@ MORE_COMMITS_Q = """query($owner:String!,$name:String!,$number:Int!,$endCursor:S
 KW_RE = re.compile(r"(?<![\w/])(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)\b", re.I)
 
 
+def run_gh(args):
+    """gh を呼び、標準出力を返す。失敗したら gh の言い分を添えて終わる。"""
+    try:
+        p = subprocess.run(["gh"] + args, capture_output=True, text=True)
+    except FileNotFoundError:
+        sys.exit("gh が見つかりません。GitHub CLI（https://cli.github.com/）を入れて gh auth login してください")
+    if p.returncode != 0:
+        sys.exit("gh %s が失敗しました: %s" % (" ".join(args[:2]), p.stderr.strip() or p.stdout.strip()))
+    return p.stdout
+
+
 def gh(query, variables):
-    cmd = ["gh", "api", "graphql", "-f", "query=" + query]
+    args = ["api", "graphql", "-f", "query=" + query]
     for k, v in variables.items():
         if v is not None:
-            cmd += ["-F" if isinstance(v, int) else "-f", "%s=%s" % (k, v)]
-    p = subprocess.run(cmd, capture_output=True, text=True)
-    if p.returncode != 0:
-        sys.exit("gh api graphql が失敗しました: " + (p.stderr.strip() or p.stdout.strip()))
-    out = json.loads(p.stdout)
+            args += ["-F" if isinstance(v, int) else "-f", "%s=%s" % (k, v)]
+    out = json.loads(run_gh(args))
     if out.get("errors"):
         sys.exit("GraphQL のエラー: " + json.dumps(out["errors"], ensure_ascii=False))
     return out["data"]
@@ -212,10 +220,10 @@ def main():
     ap.add_argument("--since", default="6m", help="この日以降に更新された issue / PR（YYYY-MM-DD、または 90d / 12w / 6m / 1y）")
     ap.add_argument("--max-pages", type=int, default=200, help="1 つの一覧で取るページ数の上限（1 ページ %d 件）" % PAGE)
     a = ap.parse_args()
-    repo = a.repo or subprocess.run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-                                    capture_output=True, text=True, check=True).stdout.strip()
+    repo = a.repo or run_gh(["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"]).strip()
     now = datetime.datetime.now(datetime.timezone.utc)
     data = collect(gh, repo, parse_since(a.since, now.date()), a.max_pages, now.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     print("%s: issue %d, PR %d, コミット %d" % (a.out, len(data["i"]), len(data["p"]), len(data["cs"])))

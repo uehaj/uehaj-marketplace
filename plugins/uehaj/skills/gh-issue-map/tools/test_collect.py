@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """collect.py の純粋な部分のテスト。gh は呼ばず、GraphQL の応答と同じ形の dict を差し込む。"""
-import contextlib, io, os, re, sys, unittest
+import contextlib, io, json, os, re, subprocess, sys, tempfile, unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import collect  # noqa: E402
@@ -151,6 +152,54 @@ class CollectTest(unittest.TestCase):
         self.assertEqual(set(data["p"]), {"2", "3", "4"})
         self.assertEqual([v["endCursor"] for q, v in calls if q is collect.PRS_Q], [None, "p1"])
         self.assertEqual(data["since"], "2026-09-01")
+
+
+    def test_pr_commits_past_the_first_page_are_refetched(self):
+        cm = {"totalCount": 2, "pageInfo": {"hasNextPage": True, "endCursor": "k1"},
+              "nodes": [{"commit": commit("aaaaaaaaaa1111")}]}
+
+        def responses(q, v):
+            if q is collect.ISSUES_Q:
+                return page("issues", [])
+            if q is collect.PRS_Q:
+                return page("pullRequests", [pr(7, commits=cm)])
+            if q is collect.MORE_COMMITS_Q:
+                self.assertEqual((v["number"], v["endCursor"]), (7, "k1"))
+                return {"repository": {"pullRequest": {"commits": {
+                    "pageInfo": {"hasNextPage": False, "endCursor": "k2"}, "nodes": [{"commit": commit("bbbbbbbbbb2222")}]}}}}
+            self.fail("予期しないクエリ")
+        data, calls = self.run_collect(responses)
+        self.assertEqual(data["p"]["7"]["cm"], ["aaaaaaaaaa", "bbbbbbbbbb"])
+        self.assertEqual(set(data["cs"]), {"aaaaaaaaaa", "bbbbbbbbbb"})
+
+
+class MainTest(unittest.TestCase):
+    def main(self, *argv):
+        with mock.patch.object(sys, "argv", ["collect.py"] + list(argv)), \
+                contextlib.redirect_stdout(io.StringIO()):
+            collect.main()
+
+    def test_without_repo_a_gh_failure_says_why(self):
+        failed = subprocess.CompletedProcess([], 4, "", "To get started with GitHub CLI, please run:  gh auth login\n")
+        with mock.patch.object(collect.subprocess, "run", return_value=failed), \
+                self.assertRaises(SystemExit) as e:
+            self.main("--out", os.devnull)
+        self.assertIn("gh repo view", str(e.exception.code))
+        self.assertIn("gh auth login", str(e.exception.code))
+
+    def test_missing_gh_says_so(self):
+        with mock.patch.object(collect.subprocess, "run", side_effect=FileNotFoundError("gh")), \
+                self.assertRaises(SystemExit) as e:
+            self.main("--out", os.devnull)
+        self.assertIn("gh が見つかりません", str(e.exception.code))
+
+    def test_out_directory_is_created(self):
+        empty = lambda q, v: page("pullRequests" if q is collect.PRS_Q else "issues", [])
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(collect, "gh", empty):
+            out = os.path.join(d, "new", "dir", "map.json")
+            self.main("--repo", REPO, "--out", out)
+            with open(out, encoding="utf-8") as f:
+                self.assertEqual(json.load(f)["repo"], REPO)
 
 
 class SinceTest(unittest.TestCase):
