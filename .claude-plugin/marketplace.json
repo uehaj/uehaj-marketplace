@@ -11,8 +11,8 @@
     {
       "name": "uehaj",
       "source": "./plugins/uehaj",
-      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize), /uehaj:semgrep (the older @uehaj/semgrep), and run-interactive (run an interactive command in a herdr side pane under script, let the human answer, collect the log)",
-      "version": "0.3.0",
+      "description": "Skills by uehaj: sys1grep (grep by meaning via @uehaj/sys1grep, model-invoked, with --summarize), /uehaj:semgrep (the older @uehaj/semgrep), and run-interactive (run an interactive command in a herdr side pane under script, let the human answer, collect the log), and gh-issue-map (a table and a dependency graph of a GitHub repository's issues, PRs and commits, in one HTML page)",
+      "version": "0.4.0",
       "author": {
         "name": "Junji UEHARA"
       },
@@ -27,7 +27,10 @@
         "jev",
         "herdr",
         "interactive",
-        "interactive-shell"
+        "interactive-shell",
+        "github",
+        "issues",
+        "dependency-graph"
       ]
     },
     {
