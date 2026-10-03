@@ -28,6 +28,7 @@ npx skills add uehaj/uehaj-marketplace --skill sys1grep -a claude-code -g
 | `/uehaj:semgrep <meaning> [files]` | grep by meaning. Finds lines that match a described meaning, in any language, with AND / OR / NOT. | [`@uehaj/semgrep`](https://github.com/uehaj/jev-semgrep) (`npm install -g @uehaj/semgrep`, or the skill falls back to `npx`) and a TypeSafe API key |
 | `/uehaj:run-interactive <command>` | runs a command that needs a human at the keyboard (`rm -i`, `git commit -p`, `git rebase -i`, an ssh login) in a herdr side pane wrapped in `script`, hands focus to the human, and when they finish collects the exit code and the full log, their keystrokes included. Claude's Bash tool cannot take interactive input; this is the way round it. Model-invoked. | [herdr](https://herdr.dev) (`HERDR_ENV=1`), `script`, `python3` |
 | `/uehaj:ri <command>` | short alias for `/uehaj:run-interactive`. | same |
+| `/uehaj:gh-issue-map [owner/repo] [--since 6m]` | collects a GitHub repository's issues, PRs and commits (read-only GraphQL through `gh`) and writes one self-contained HTML page: a table of issues with the PRs and commits that work on them, and a graph whose edges are blocked-by, PR to issue (closing references, `Closes #N` in the body, or the branch name), stacked PRs, shared commits and mentions; sub-issues are drawn as frames. Model-invoked. | [`gh`](https://cli.github.com/) (logged in), `python3` |
 
 ## Playground
 
@@ -50,7 +51,7 @@ by the name the terminal reports, and a libghostty-based multiplexer such as her
 .claude-plugin/marketplace.json     the catalog (marketplace name: uehaj-marketplace)
 plugins/uehaj/
   .claude-plugin/plugin.json        the plugin (name: uehaj)
-  skills/<skill>/SKILL.md           one folder per skill
+  skills/<skill>/SKILL.md           one folder per skill, with any scripts the skill runs beside it
 plugins/playground/
   .claude-plugin/plugin.json        the plugin (name: playground)
   hooks/hooks.json                  names the module the engine loads
@@ -59,7 +60,8 @@ plugins/playground/
   hooks/pane.ts                     base64 without Buffer, and the pane's size in cells
 ```
 
-Tools the skills call live in their own repositories; this repository holds only the skills.
+Tools with their own release cycle (sys1grep, semgrep) live in their own repositories; a skill's small
+helper scripts (`run-interactive.sh`, `gh-issue-map/tools/`) live beside its SKILL.md.
 
 ## License
 

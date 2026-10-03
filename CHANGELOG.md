@@ -6,6 +6,14 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `uehaj` 0.4.0: `gh-issue-map`. `tools/collect.py` reads a repository's issues and PRs with two paged GraphQL
+  queries through `gh` (read-only, a hard page cap) and writes one JSON of facts only: blocked-by, parent,
+  closing references, `Closes #N` in PR bodies, head / base branches, PR commits, cross-references.
+  `tools/render.py` turns it into one self-contained HTML page with a table tab and a graph tab sharing the
+  filters; the edges (`order` / `impl` / `stack` / `share` / `mention`, each with its source `api` / `text` /
+  `name`) are derived in the page, not stored. `--branch-re` is a JavaScript regex and is checked with
+  `new RegExp` in node when node is installed. A failing `gh` (not installed, not logged in, not in a repository)
+  exits with gh's own message. Tests run on a fixture with no network.
 - `uehaj`: `/uehaj:ri`, a short alias for `/uehaj:run-interactive`. Claude Code has no alias key in a
   skill's frontmatter, so the alias is a command file that invokes the skill with `$ARGUMENTS`.
 - `uehaj` 0.3.0: `run-interactive`. A command that needs a human at the keyboard (`rm -i`, `git commit -p`,
