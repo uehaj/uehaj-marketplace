@@ -1,6 +1,6 @@
 # ワーカーセッションの開き方
 
-Claude Code 2.1.289 の `claude --help`、`claude agents --help`、SendMessage のツール説明、herdr のヘルプで確かめた。
+Claude Code 2.1.289 の `claude --help`、`claude agents --help`、SendMessage のツール説明、`herdr --skill` の本文で確かめた。
 「未確認」はこのスキルを書く時点で試していないもの。セッションを実際に開く試験はしていない。
 
 ## herdr の中（`HERDR_ENV=1`）
@@ -23,16 +23,18 @@ herdr agent prompt worker-1 "<ワーカー用プロンプト>" --wait --timeout 
 ```bash
 claude --bg -n worker-1 --permission-mode <コーディネーターと同じ> "<ワーカー用プロンプト>"
 claude agents --json     # id, name, cwd, kind, state, sessionId, startedAt
-claude logs <id>         # 直近の端末出力。TTY 不要なのでツールから使える
+claude logs <id>         # 直近の端末出力
 ```
 
-- `claude attach <id>` は端末で開いて操作する（TTY が要るので、ツールからでなくユーザーに使ってもらう）。
+- `claude logs` のヘルプには TTY の記述が無い。ツール（非 TTY）から実行して TTY のエラーは出なかったが、
+  生きたセッションの出力が取れるかは未確認。
+- `claude attach <id>` は端末で開く。ヘルプは TTY の要否を書いていないが、ユーザーに使ってもらう扱いにする。
   stop / rm / respawn もある。
 - `-w, --worktree [name]` を付けると git worktree を作ってそこで動く。
-- バックグラウンドでは、質問が出ても誰も気づかず止まる（`claude agents --json` の `state` が `blocked`）。
-  ワーカー用プロンプトの「質問しない」の段を必ず入れる。
-- ネットワークやプロキシを切り替えた後は、バックグラウンドのセッションが古い設定のまま API に届かないことがある。
-  `claude agents` で状態を見る。
+- バックグラウンドでは、質問が出ても誰も気づかず止まる。ワーカー用プロンプトの「質問しない」の段を必ず入れる。
+- `claude agents --json` の `blocked` はデーモンが居ないセッションにも出る（`claude logs <id>` が control.sock の ENOENT を返す。2.1.289 で観察）。`state` の値の意味はヘルプに無く、`blocked` が質問待ちを意味するとは限らない（推定）。生死は ListAgents に出るかで決める。
+- ネットワークやプロキシを切り替えた後は、バックグラウンドのセッションが古い設定のまま API に届かないことがある
+  （運用で観察。ヘルプ由来ではない）。`claude agents` で状態を見る。
 - `--bg` と `-n` と位置引数のプロンプトを同時に渡す形は、ヘルプ上は成り立つが未確認。
 
 ## `/fork`
@@ -57,11 +59,11 @@ claude logs <id>         # 直近の端末出力。TTY 不要なのでツール�
 - **待機中のセッションが受信で目覚めるか。** SendMessage の説明は「受け手の次のツールラウンドで取り出される」
   とだけ言い、idle のセッションが受信で新しいターンを始めるとは書いていない。運用では、idle のセッションに送った
   メッセージで受け手が新しいターンを始めて返信したのを複数回観察した（Claude Code 2.1.289、2026-10-04。
-  docs で保証された挙動ではない）。このスキルはこれに依存する。ワーカーが長く沈黙したら、ユーザーに
-  そのセッションへ一言入れてもらう。
+  docs で保証された挙動ではない）。このスキルはこれに依存する。ワーカーが長く沈黙したら、そのセッションへ
+  一言入れる。手段は環境で違う（`--bg` はユーザーに `claude attach <id>` で開いて入力してもらう、herdr は `herdr agent prompt`）。
 - `-n` を付けずに起動したセッションの名前は cwd のディレクトリ名になる（`claude agents --json` で確認）。
-  同じチェックアウトで複数のセッションが動くと同名になるので、コーディネーターもワーカーも `-n` で名前を付ける。
-
+  同じチェックアウトで複数のセッションが動くと、一覧では同名か ` (2)` のような番号付きになる（ListAgents での見え方は未確認）。
+  コーディネーターもワーカーも `-n` で名前を付ける。
 - SendMessage の宛先は ListAgents の行頭の `name [ref]`。名前が一意なら名前だけでよく、同名が居るときだけ `[ref]` を付ける。
   `[ref]` は直前の ListAgents かエラーに出たものだけが通る。
 - `uds:<socket>` / `bridge:<session id>` の形の宛先は、2.1.289 ではセッション間のファイル送信の説明に明記されている。

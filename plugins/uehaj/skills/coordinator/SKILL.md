@@ -13,8 +13,9 @@ argument-hint: "[ワーカー数（既定 3）]"
 
 ## 始め方
 
-1. 自分の名前が ListAgents で一意か確かめる。`-n` 無しのセッションの名前は cwd のディレクトリ名になり、
-   同じチェックアウトの別セッションと重なる。一意でなければ `-n <名前>` 付きで起動し直してもらうよう、ユーザーに頼む。
+1. 自分の名前が ListAgents で一意か確かめる。`-n` 無しのセッションの名前は cwd のディレクトリ名で、`claude agents --json`
+   では同じチェックアウトの別セッションと同名か ` (2)` 付きになる（ListAgents での見え方は未確認）。
+   一意でなければ `-n <名前>` 付きで起動し直してもらうよう、ユーザーに頼む。
 2. `workdir/coordinator-state.md`（下の「状態ファイル」）があれば読み、再開として扱う。ListAgents と
    `claude agents --json` で、書かれたワーカーが今も居るかを確かめる。
 3. ワーカーを N 名（`$ARGUMENTS`、既定 3）開く。ユーザーがこのスキルを呼んだことを開く承認とし、開く前に
@@ -24,7 +25,7 @@ argument-hint: "[ワーカー数（既定 3）]"
    | 環境 | 手段 |
    |---|---|
    | herdr の中（`HERDR_ENV=1`） | `herdr pane split` → `herdr agent start <name> --kind claude --pane <id>` → `herdr agent prompt` |
-   | 端末だけ | `claude --bg -n <name> "<ワーカー用プロンプト>"`。質問が出ても誰も気づかない点に注意 |
+   | 端末だけ | `claude --bg -n <name> --permission-mode <コーディネーターと同じ> "<ワーカー用プロンプト>"`。質問が出ても誰も気づかない点に注意 |
    | どれも使えない・不確か | ユーザーに別の端末で `claude -n <name>` を開いてもらい、プロンプトを貼ってもらう |
 
    ワーカーはコーディネーターと同じ permission mode で起動する。mode が違うと、届いたメッセージが
@@ -85,7 +86,6 @@ argument-hint: "[ワーカー数（既定 3）]"
 
 ## 方針
 - 批判的レビューは最強モデルのサブエージェント。重大・中の指摘なしなら記録とマージまで進めてよい（ユーザー、10/04）
-
 - ワーカーの開き方は `claude --bg`、permission mode は acceptEdits
 
 ## 担当
