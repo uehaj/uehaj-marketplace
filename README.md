@@ -29,6 +29,7 @@ npx skills add uehaj/uehaj-marketplace --skill sys1grep -a claude-code -g
 | `/uehaj:run-interactive <command>` | runs a command that needs a human at the keyboard (`rm -i`, `git commit -p`, `git rebase -i`, an ssh login) in a herdr side pane wrapped in `script`, hands focus to the human, and when they finish collects the exit code and the full log, their keystrokes included. Claude's Bash tool cannot take interactive input; this is the way round it. Model-invoked. | [herdr](https://herdr.dev) (`HERDR_ENV=1`), `script`, `python3` |
 | `/uehaj:ri <command>` | short alias for `/uehaj:run-interactive`. | same |
 | `/uehaj:gh-issue-map [owner/repo] [--since 6m]` | collects a GitHub repository's issues, PRs and commits (read-only GraphQL through `gh`) and writes one self-contained HTML page: a table of issues with the PRs and commits that work on them, and a graph whose edges are blocked-by, PR to issue (closing references, `Closes #N` in the body, or the branch name), stacked PRs, shared commits and mentions; sub-issues are drawn as frames. Model-invoked. | [`gh`](https://cli.github.com/) (logged in), `python3` |
+| `/uehaj:coordinator [N]` | turns this session into a coordinator: opens N worker sessions (default 3; through herdr, `claude --bg`, or by asking you to open terminals), gives each a worker prompt, then hands out issues and PRs over cross-session messages (SendMessage / ListAgents), answers the workers' questions or brings them to you, has a separate subagent review each PR, and reports conclusions, decisions taken, questions for you and work in flight. Keeps its state in `workdir/coordinator-state.md` so it can resume after `/clear`. Invoked by hand only. | Claude Code with SendMessage and ListAgents (checked on 2.1.289), `gh`; optionally [herdr](https://herdr.dev) |
 
 ## Playground
 
@@ -61,7 +62,8 @@ plugins/playground/
 ```
 
 Tools with their own release cycle (sys1grep, semgrep) live in their own repositories; a skill's small
-helper scripts (`run-interactive.sh`, `gh-issue-map/tools/`) live beside its SKILL.md.
+helper scripts (`run-interactive.sh`, `gh-issue-map/tools/`) and longer references (`coordinator/references/`)
+live beside its SKILL.md.
 
 ## License
 

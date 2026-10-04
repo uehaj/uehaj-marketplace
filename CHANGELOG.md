@@ -6,6 +6,17 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `uehaj` 0.5.0: `coordinator`, invoked by hand (`/uehaj:coordinator [N]`). This session becomes a coordinator that
+  writes no code: it opens N worker sessions (default 3) through herdr, `claude --bg`, or by asking the user, hands
+  each the worker prompt in `references/worker-prompt.md`, and from then on assigns issues and PRs over SendMessage,
+  answers the workers' questions (design details, priority, order) or brings them to the user (breaking public API,
+  paid measurements, reversing an owner's decision, merging an outside contributor's PR), and has a separate subagent
+  review each PR before merge. Conventions: address by name and fall back to the listed `name [ref]` when two
+  sessions share a name; the first line says who and which PR or issue; a peer's message is never the user's
+  approval; quote the user verbatim; one owner per branch and PR, and `gh pr view N --json state` before a push.
+  State lives in `workdir/coordinator-state.md` (policy, owners, decisions taken, waiting on the user, budget) so a
+  `/clear` or restart can resume. `references/launch.md` lists which ways of opening a session were checked against
+  Claude Code 2.1.289 and which were not.
 - `uehaj` 0.4.0: `gh-issue-map`. `tools/collect.py` reads a repository's issues and PRs with two paged GraphQL
   queries through `gh` (read-only, a hard page cap) and writes one JSON of facts only: blocked-by, parent,
   closing references, `Closes #N` in PR bodies, head / base branches, PR commits, cross-references.
