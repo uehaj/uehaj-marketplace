@@ -1,7 +1,7 @@
 {
   "name": "uehaj",
-  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep. run-interactive: runs rm -i, git commit -p / rebase -i or an ssh login in a herdr side pane under script, hands the keyboard to the human, and collects exit code and log when they finish. gh-issue-map: one HTML page with a table and a dependency graph of a GitHub repository's issues, PRs and commits. coordinator: one session hands issues and PRs to a few worker sessions over SendMessage, answers their questions, and manages review and merge.",
-  "version": "0.5.0",
+  "description": "Skills by uehaj. sys1grep: grep by meaning (TypeSafe Jev) that Claude reaches for on its own instead of Grep or reading whole files, with --summarize for an answer instead of lines; /uehaj:semgrep is the older @uehaj/semgrep. run-interactive: runs rm -i, git commit -p / rebase -i or an ssh login in a herdr side pane under script, hands the keyboard to the human, and collects exit code and log when they finish. gh-issue-map: one HTML page with a table and a dependency graph of a GitHub repository's issues, PRs and commits. coordinator: one session hands issues and PRs to a few worker sessions over SendMessage, answers their questions, and manages review and merge. hatena-x-comment-refine: reads the x.com posts behind Hatena Bookmark entries in the browser (Claude in Chrome) and rewrites empty or short comments as \"[tag][tag] summary\", after the user approves the list.",
+  "version": "0.6.0",
   "author": {
     "name": "Junji UEHARA",
     "url": "https://github.com/uehaj"
@@ -20,6 +20,9 @@
     "issues",
     "dependency-graph",
     "coordinator",
-    "multi-session"
+    "multi-session",
+    "hatena-bookmark",
+    "x.com",
+    "claude-in-chrome"
   ]
 }

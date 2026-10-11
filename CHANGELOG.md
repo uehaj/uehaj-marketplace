@@ -6,6 +6,13 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `uehaj` 0.6.0: `hatena-x-comment-refine`. Rewrites Hatena Bookmark comments on x.com bookmarks as
+  `[tag][tag] summary`. Reads the bookmark list from the user's RSS feed with a same-origin `fetch` in a
+  b.hatena.ne.jp tab (verbatim, no summarizing model in between), reads each post with `get_page_text` in a
+  separate tab, shows a table of drafts for approval, then fills the entry page's inline edit form by script and
+  presses the site's own save button (stops if "post to Twitter" is checked; never reads the form's hidden token).
+  Ends by re-reading the RSS feed and comparing tags plus comment with the approved drafts, exact match.
+  Typing through the screen is kept as a fallback, with its known traps.
 - `uehaj` 0.5.0: `coordinator`, invoked by hand (`/uehaj:coordinator [N]`). This session becomes a coordinator that
   writes no code: it opens N worker sessions (default 3) through herdr, `claude --bg`, or by asking the user, hands
   each the worker prompt in `references/worker-prompt.md`, and from then on assigns issues and PRs over SendMessage,
