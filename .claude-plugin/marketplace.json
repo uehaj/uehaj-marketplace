@@ -55,6 +55,23 @@
         "kitty-graphics",
         "mandelbrot"
       ]
+    },
+    {
+      "name": "requirements-tool",
+      "source": "./plugins/requirements-tool",
+      "description": "A lightweight requirements-engineering tool: requirements kept as one markdown file each, implicit-requirement detection on every prompt, deterministic lint / view / review CLIs, and /req-init. Texts are in Japanese.",
+      "version": "0.48.0",
+      "author": {
+        "name": "Junji UEHARA"
+      },
+      "homepage": "https://github.com/uehaj/uehaj-marketplace/tree/main/plugins/requirements-tool",
+      "license": "MIT",
+      "keywords": [
+        "requirements-engineering",
+        "babok",
+        "traceability",
+        "adr"
+      ]
     }
   ]
 }

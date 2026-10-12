@@ -6,6 +6,11 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `requirements-tool` 0.48.0: a new plugin. Requirements kept as one markdown file each (YAML frontmatter), implicit
+  requirement detection on every prompt (a `UserPromptSubmit` hook and the `requirements-loop` skill), deterministic lint /
+  tree / guided-review / document CLIs with no dependencies (Node 23.6+), a local review server that writes verdicts back
+  to the records, and `/req-init`. Texts are in Japanese. Imported from the author's own repository as a fresh copy of
+  the plugin files only; its history and self-hosted requirements are not part of this repository.
 - `uehaj` 0.6.0: `hatena-x-comment-refine`. Rewrites Hatena Bookmark comments on x.com bookmarks as
   `[tag][tag] summary`. Reads the bookmark list from the user's RSS feed with a same-origin `fetch` in a
   b.hatena.ne.jp tab (verbatim, no summarizing model in between), reads each post with `get_page_text` in a

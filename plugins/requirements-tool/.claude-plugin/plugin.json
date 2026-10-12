@@ -1,0 +1,20 @@
+{
+  "name": "requirements-tool",
+  "version": "0.48.0",
+  "description": "ライトウェイトな要求工学ツール。要求/要件を1件1mdの正本として管理し、暗黙の要求検出（SR-8）・決定的な検査/生成CLI（lint/view/tree）・初期化コマンドをプラグインとして提供する（ADR-004）。",
+  "author": {
+    "name": "Junji UEHARA",
+    "url": "https://github.com/uehaj"
+  },
+  "homepage": "https://github.com/uehaj/uehaj-marketplace/tree/main/plugins/requirements-tool",
+  "repository": "https://github.com/uehaj/uehaj-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "requirements-engineering",
+    "babok",
+    "traceability",
+    "adr",
+    "skills",
+    "hooks"
+  ]
+}
