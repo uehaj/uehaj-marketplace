@@ -11,6 +11,11 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
   tree / guided-review / document CLIs with no dependencies (Node 23.6+), a local review server that writes verdicts back
   to the records, and `/req-init`. Texts are in Japanese. Imported from the author's own repository as a fresh copy of
   the plugin files only; its history and self-hosted requirements are not part of this repository.
+- `decision-pane` 0.1.0: a pane of the open items (`- [ ]`) in `decisions.md`. ✔ OK marks an item
+  `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to a folded settled section; ⏸ Hold marks it
+  `- [~] ... (保留 ...)` and folds it into a held section, from which ▶ Resume reopens it; a comment is added as an
+  indented `- コメント` line and the item stays open for the AI to answer (`- 回答:`) and refine. Cards are colored
+  and marked by whose turn it is. The counts show on the status line; `/decisions` opens the pane. No model calls.
 - `uehaj` 0.6.0: `hatena-x-comment-refine`. Rewrites Hatena Bookmark comments on x.com bookmarks as
   `[tag][tag] summary`. Reads the bookmark list from the user's RSS feed with a same-origin `fetch` in a
   b.hatena.ne.jp tab (verbatim, no summarizing model in between), reads each post with `get_page_text` in a
