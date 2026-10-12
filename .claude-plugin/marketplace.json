@@ -55,6 +55,24 @@
         "kitty-graphics",
         "mandelbrot"
       ]
+    },
+    {
+      "name": "decision-pane",
+      "source": "./plugins/decision-pane",
+      "description": "A pane of the decisions in decisions.md waiting on you. OK settles an item, Hold folds it away, a comment keeps it open for the AI to answer and refine; held and settled items fold into their own sections. Icons and colors show whose turn it is. Needs CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Junji UEHARA"
+      },
+      "homepage": "https://github.com/uehaj/uehaj-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "function-hooks",
+        "pane",
+        "decisions",
+        "approval",
+        "human-in-the-loop"
+      ]
     }
   ]
 }

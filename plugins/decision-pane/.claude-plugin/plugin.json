@@ -1,0 +1,20 @@
+{
+  "name": "decision-pane",
+  "description": "A pane of the decisions in decisions.md waiting on you. OK settles an item, Hold folds it away, a comment keeps it open for the AI to answer and refine; held and settled items fold into their own sections. Icons and colors show whose turn it is.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Junji UEHARA",
+    "url": "https://github.com/uehaj"
+  },
+  "homepage": "https://github.com/uehaj/uehaj-marketplace",
+  "repository": "https://github.com/uehaj/uehaj-marketplace",
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "keywords": [
+    "function-hooks",
+    "pane",
+    "decisions",
+    "approval",
+    "human-in-the-loop"
+  ]
+}
