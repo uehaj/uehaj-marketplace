@@ -59,7 +59,7 @@
     {
       "name": "decision-pane",
       "source": "./plugins/decision-pane",
-      "description": "A pane listing the open items (- [ ]) in decisions.md. OK marks one approved with a timestamp; a comment is added under it for the AI to answer and refine the item. Needs CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1.",
+      "description": "A pane of the decisions in decisions.md waiting on you. OK settles an item, Hold folds it away, a comment keeps it open for the AI to answer and refine; held and settled items fold into their own sections. Icons and colors show whose turn it is. Needs CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1.",
       "version": "0.1.0",
       "author": {
         "name": "Junji UEHARA"

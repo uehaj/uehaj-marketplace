@@ -51,13 +51,22 @@ by the name the terminal reports, and a libghostty-based multiplexer such as her
 ## Decision pane
 
 A pane listing the open items (`- [ ] ...`) of `decisions.md` in the working directory, so a decision the AI
-is waiting on does not scroll away in the chat. Each item has an **OK** button, which rewrites the line as
-`- [x] ... (承認 YYYY-MM-DD HH:MM)`, and a comment field, which adds `  - コメント YYYY-MM-DD HH:MM: ...` under
-the item and leaves it open, so the AI can answer (`  - 回答: ...`) and refine the item's text. The status line
-shows how many are open; `/decisions` opens the pane when the terminal is too narrow to open it unasked.
-It calls no model: telling the AI about a change is left to whatever watches `decisions.md`. The line format
-is the contract with that watcher; see [plugins/decision-pane/README.md](plugins/decision-pane/README.md)
-(Japanese). Needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, like the playground.
+is waiting on does not scroll away in the chat. Each item is a card whose color and icon say whose turn it is
+(👉 yours, ⏳ the AI's), with the comments (💬) and answers (🤖) under it, a comment field, and two buttons:
+
+- **✔ OK** rewrites the line as `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to the folded ✅ settled section,
+  newest first.
+- **⏸ Hold** rewrites it as `- [~] ... (保留 YYYY-MM-DD HH:MM)` and folds it into the ⏸ held section, from which
+  **▶ Resume** puts it back.
+- A **comment** adds `  - コメント YYYY-MM-DD HH:MM: ...` under the item and leaves it open, so the AI can answer
+  (`  - 回答: ...`) and refine the item's text.
+
+The status line shows the open and held counts; `/decisions` opens the pane when the terminal is too narrow to
+open it unasked. It calls no model: telling the AI about a change is left to whatever watches `decisions.md`.
+The line format is the contract with that watcher; see
+[plugins/decision-pane/README.md](plugins/decision-pane/README.md) (Japanese). Needs
+`CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, like the playground. Install it at the user scope and it loads in the
+desktop app's local sessions too.
 
 ## Layout
 
@@ -74,8 +83,8 @@ plugins/playground/
   hooks/pane.ts                     base64 without Buffer, and the pane's size in cells
 plugins/decision-pane/
   .claude-plugin/plugin.json        the plugin (name: decision-pane)
-  hooks/register.tsx                the pane, OK and comment, /decisions
-  hooks/approve.test.tsx            claude plugin test: what OK and a comment write
+  hooks/register.tsx                the pane: OK, hold, comment, folded sections, /decisions
+  hooks/approve.test.tsx            claude plugin test: what OK, hold, resume and a comment write
   types/index.d.ts                  the pane's state contract
 ```
 
