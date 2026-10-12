@@ -4,6 +4,8 @@
 
 ![会話の右に Decisions ペインが開き、未決ごとのカードとボタン、保留・決着の欄、ステータスラインの件数が出ている](docs/screenshot.png)
 
+<img src="docs/screenshot-desktop.png" width="320" alt="desktop アプリでの同じペイン。カードごとにコメント欄、送るボタン、OK と保留のボタンが並ぶ">
+
 ## 使い方
 
 - セッション開始時にペインが開く。端末の幅が足りず開かないときは `/decisions` で開く。

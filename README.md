@@ -52,6 +52,8 @@ by the name the terminal reports, and a libghostty-based multiplexer such as her
 
 ![The Decisions pane beside the transcript: one card per open item with OK and Hold buttons, the folded held and settled sections, and the counts in the status line](plugins/decision-pane/docs/screenshot.png)
 
+<img src="plugins/decision-pane/docs/screenshot-desktop.png" width="320" alt="The same pane in the desktop app: cards with a comment field, a Send button, and OK and Hold buttons">
+
 A pane listing the open items (`- [ ] ...`) of `decisions.md` in the working directory, so a decision the AI
 is waiting on does not scroll away in the chat. Each item is a card whose color and icon say whose turn it is
 (👉 yours, ⏳ the AI's), with the comments (💬) and answers (🤖) under it, a comment field, and two buttons:
