@@ -6,6 +6,10 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `decision-pane` 0.1.0: a pane listing the open items (`- [ ]`) of `decisions.md`. OK marks an item
+  `- [x] ... (承認 YYYY-MM-DD HH:MM)`; a comment is added as an indented `- コメント` line under the item, which
+  stays open for the AI to answer (`- 回答:`) and refine. The open count shows on the status line; `/decisions`
+  opens the pane. No model calls.
 - `uehaj` 0.6.0: `hatena-x-comment-refine`. Rewrites Hatena Bookmark comments on x.com bookmarks as
   `[tag][tag] summary`. Reads the bookmark list from the user's RSS feed with a same-origin `fetch` in a
   b.hatena.ne.jp tab (verbatim, no summarizing model in between), reads each post with `get_page_text` in a

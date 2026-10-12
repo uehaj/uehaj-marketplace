@@ -55,6 +55,24 @@
         "kitty-graphics",
         "mandelbrot"
       ]
+    },
+    {
+      "name": "decision-pane",
+      "source": "./plugins/decision-pane",
+      "description": "A pane listing the open items (- [ ]) in decisions.md. OK marks one approved with a timestamp; a comment is added under it for the AI to answer and refine the item. Needs CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Junji UEHARA"
+      },
+      "homepage": "https://github.com/uehaj/uehaj-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "function-hooks",
+        "pane",
+        "decisions",
+        "approval",
+        "human-in-the-loop"
+      ]
     }
   ]
 }

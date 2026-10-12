@@ -1,13 +1,14 @@
 # uehaj/uehaj-marketplace
 
-Claude Code plugin marketplace by [uehaj](https://github.com/uehaj). Two plugins:
+Claude Code plugin marketplace by [uehaj](https://github.com/uehaj). Three plugins:
 `uehaj` holds the skills, so every skill is `/uehaj:<skill>`; `playground` holds function-hook
-experiments that draw in a pane.
+experiments that draw in a pane; `decision-pane` lists the decisions waiting on you in a pane.
 
 ```sh
 claude plugin marketplace add uehaj/uehaj-marketplace   # or: /plugin marketplace add uehaj/uehaj-marketplace
 claude plugin install uehaj@uehaj-marketplace           # the skills
 claude plugin install playground@uehaj-marketplace      # the pane experiments
+claude plugin install decision-pane@uehaj-marketplace   # the decisions pane
 ```
 
 Update later with `claude plugin marketplace update uehaj-marketplace`.
@@ -47,6 +48,17 @@ by the name the terminal reports, and a libghostty-based multiplexer such as her
 `libghostty`, which is not on that list — the image then falls back to its alt text. Set
 `CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1` there; the probe itself succeeds, only the name check fails.
 
+## Decision pane
+
+A pane listing the open items (`- [ ] ...`) of `decisions.md` in the working directory, so a decision the AI
+is waiting on does not scroll away in the chat. Each item has an **OK** button, which rewrites the line as
+`- [x] ... (承認 YYYY-MM-DD HH:MM)`, and a comment field, which adds `  - コメント YYYY-MM-DD HH:MM: ...` under
+the item and leaves it open, so the AI can answer (`  - 回答: ...`) and refine the item's text. The status line
+shows how many are open; `/decisions` opens the pane when the terminal is too narrow to open it unasked.
+It calls no model: telling the AI about a change is left to whatever watches `decisions.md`. The line format
+is the contract with that watcher; see [plugins/decision-pane/README.md](plugins/decision-pane/README.md)
+(Japanese). Needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, like the playground.
+
 ## Layout
 
 ```
@@ -60,6 +72,11 @@ plugins/playground/
   hooks/register.tsx                registers both commands, then each file's hooks
   hooks/{img,mandel}.tsx            one command each
   hooks/pane.ts                     base64 without Buffer, and the pane's size in cells
+plugins/decision-pane/
+  .claude-plugin/plugin.json        the plugin (name: decision-pane)
+  hooks/register.tsx                the pane, OK and comment, /decisions
+  hooks/approve.test.tsx            claude plugin test: what OK and a comment write
+  types/index.d.ts                  the pane's state contract
 ```
 
 Tools with their own release cycle (sys1grep, semgrep) live in their own repositories; a skill's small

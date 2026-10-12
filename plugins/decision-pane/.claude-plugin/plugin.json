@@ -1,0 +1,14 @@
+{
+  "name": "decision-pane",
+  "description": "A pane listing the open items (- [ ]) in decisions.md. OK marks one approved with a timestamp; a comment is added under it for the AI to answer and refine the item.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Junji UEHARA",
+    "url": "https://github.com/uehaj"
+  },
+  "homepage": "https://github.com/uehaj/uehaj-marketplace",
+  "repository": "https://github.com/uehaj/uehaj-marketplace",
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "keywords": ["function-hooks", "pane", "decisions", "approval", "human-in-the-loop"]
+}
