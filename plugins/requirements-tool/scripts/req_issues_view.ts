@@ -344,7 +344,7 @@ function buildBody(root: string, issues: IssueEntry[]): string {
   for (const c of countByStatus(issues)) {
     parts.push(
       `<button type="button" class="issue-filter-btn" data-status="${esc(c.status)}" ` +
-        `onclick="return REQ_ISSUES.filterIssues('${esc(c.status)}');">${esc(c.label)} ${c.count}</button>`,
+        `onclick="return REQ_ISSUES.filterIssues(this.dataset.status);">${esc(c.label)} ${c.count}</button>`,
     );
   }
   parts.push("</div>");
@@ -367,7 +367,7 @@ function buildBody(root: string, issues: IssueEntry[]): string {
     const bodyHtml = autolinkReqIds(renderBodyMarkdown(issue.body), recordsById);
     parts.push(
       `<li class="issue-item" data-key="${keyAttr}" data-status="${esc(issue.status ?? "")}">` +
-        `<div class="issue-row" onclick="return REQ_ISSUES.toggleIssue('${keyAttr}');">` +
+        `<div class="issue-row" onclick="return REQ_ISSUES.toggleIssue(this.parentNode.dataset.key);">` +
         `<span class="issue-seq">${esc(issue.seqLabel)}</span>` +
         `<span class="issue-title">${esc(issue.title)}</span>` +
         renderStatusBadge(issue.status) +

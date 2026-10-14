@@ -311,6 +311,18 @@ function requestListener(root: string): http.RequestListener {
     }
 
     if (req.method === "POST" && pathname === REVIEW_PATH) {
+      // CSRF 対策: 他サイトのページからの単純 POST（text/plain・任意 Origin）を拒否する。
+      // application/json を要求すれば、他 origin からは preflight が必要になり、本サーバは応答しない。
+      const origin = req.headers.origin;
+      const host = String(req.headers.host ?? "");
+      const isLoopbackHost = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host);
+      const isSameOrigin = origin === undefined || origin === `http://${host}`;
+      const isJson = /^application\/json\b/i.test(String(req.headers["content-type"] ?? ""));
+      if (!isLoopbackHost || !isSameOrigin || !isJson) {
+        res.writeHead(403, { "Content-Type": "application/json; charset=utf-8", Connection: "close" });
+        res.end(JSON.stringify({ error: "forbidden" }));
+        return;
+      }
       const chunks: Buffer[] = [];
       req.on("data", (c: Buffer) => chunks.push(c));
       req.on("end", () => {
