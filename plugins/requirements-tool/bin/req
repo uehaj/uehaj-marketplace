@@ -1,0 +1,20 @@
+#!/bin/sh
+# req — 統一 CLI の起動ラッパ（macOS/Linux 用。ADR-009・SOL-33）。
+# node を起動して実体のディスパッチャ（bin/req.ts）へ引数を透過する。
+# 使い方: bin/req <サブコマンド> [引数...]   （例: bin/req lint）
+set -eu
+# シンボリックリンク経由（利用者が PATH 上にリンクを張った場合）でも実体の場所を解決する
+SELF=$0
+while [ -L "$SELF" ]; do
+  LINK=$(readlink "$SELF")
+  case "$LINK" in
+    /*) SELF=$LINK ;;
+    *)  SELF=$(dirname -- "$SELF")/$LINK ;;
+  esac
+done
+DIR=$(CDPATH= cd -- "$(dirname -- "$SELF")" && pwd)
+if ! command -v node >/dev/null 2>&1; then
+  echo "req: node が見つかりません（Node 23.6+ が必要）" >&2
+  exit 1
+fi
+exec node "$DIR/req.ts" "$@"
