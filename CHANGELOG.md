@@ -6,6 +6,11 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 ## [Unreleased]
 
 ### Added
+- `requirements-tool` 0.48.0: a new plugin. Requirements kept as one markdown file each (YAML frontmatter), implicit
+  requirement detection on every prompt (a `UserPromptSubmit` hook and the `requirements-loop` skill), deterministic lint /
+  tree / guided-review / document CLIs with no dependencies (Node 23.6+), a local review server that writes verdicts back
+  to the records, and `/req-init`. Texts are in Japanese. Imported from the author's own repository as a fresh copy of
+  the plugin files only; its history and self-hosted requirements are not part of this repository.
 - `decision-pane` 0.1.0: a pane of the open items (`- [ ]`) in `decisions.md`. ✔ OK marks an item
   `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to a folded settled section; ⏸ Hold marks it
   `- [~] ... (保留 ...)` and folds it into a held section, from which ▶ Resume reopens it; a comment is added as an
