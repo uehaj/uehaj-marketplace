@@ -46,9 +46,10 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
   Claude never answers a prompt itself. The log outlives the pane, so it can be collected after the shell exits.
 
 ### Changed
-- `sys1grep`: runs `@uehaj/sys1grep@0.5.0` (was 0.5.0-next.1), and the skill is written for it. A regex term is
-  `-P '/RE/flags'` (`-P '/ERROR|FATAL/' -a "meaning"`): 0.5.0 refuses `-e '/RE/'` with exit 2. Sentences are
-  `--unit=sentence-by-jev`: `--sentence` is gone. Every example in the skill was run with `--dry-run` against 0.5.0.
+- `uehaj` 0.6.1: `sys1grep` runs `@uehaj/sys1grep@0.5.0` (was 0.5.0-next.1), and the skill is written for it.
+  A regex term is `-P '/RE/flags'` (`-P '/ERROR|FATAL/' -a "meaning"`): 0.5.0 refuses `-e '/RE/'` with exit 2. Sentences are
+  `--unit=sentence-by-jev`: `--sentence` is gone. Every example in the skill was run with
+  `--dry-run` against the 0.5.0 checkout of uehaj/sys1grep.
 - `sys1grep`: the skill now fires on questions that ask for an interpretation ("what can be said from the WARN
   lines", "any trend", "sum it up") and reads the hits through `--summarize` instead of reading them itself.
   Measured against the previous wording on a 6,000-line log, 4 questions x 2 runs with Sonnet: the skill fired on
