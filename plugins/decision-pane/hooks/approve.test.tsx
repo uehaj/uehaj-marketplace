@@ -119,7 +119,11 @@ test('作業フォルダより上の decisions.md を見つけ、そこに書く
   // the engine hands the hook an absolute path: the file is the one two folders above the first path asked for
   let first = ''
   const isUp2 = (p: string) => (first ||= p, p.split('/').length === first.split('/').length - 2)
-  on('fs.stat', (_$, e: any) => (isUp2(e.path) ? { value: { kind: 'file', size: file.length, mtimeMs: 5, isLink: false } } : { deny: 'ENOENT' }) as any)
+  const dirOf = (p: string) => p.slice(0, p.lastIndexOf('/'))
+  on('fs.stat', (_$, e: any) => (
+    e.path.endsWith('/decisions.md') && isUp2(e.path) ? { value: { kind: 'file', size: file.length, mtimeMs: 5, isLink: false } }
+    : e.path.endsWith('/.git') && dirOf(e.path) === dirOf(first).split('/').slice(0, -2).join('/') ? { value: { kind: 'dir', size: 0, mtimeMs: 1, isLink: false } }
+    : { deny: 'ENOENT' }) as any)
   on('fs.read', (_$, e: any) => ({ value: isUp2(e.path) ? file : '' }))
   on('fs.write', (_$, e: any) => { wrote.push(isUp2(e.path) ? 'up2' : e.path); file = e.text; return { value: undefined } })
   on('session.start', (_$, e) => ({ cwd: e.cwd }))
@@ -134,4 +138,25 @@ test('作業フォルダより上の decisions.md を見つけ、そこに書く
   await ui.press({ key: 'ok-0' })
   expect(wrote).toEqual(['up2'])
   expect(file).toMatch(/^- \[x\] 上の階の項目 \(承認 /)
+})
+
+test('リポジトリの最上位（.git フォルダ）より上の decisions.md は読まない', async ($, on) => {
+  let first = ''
+  const depth = (p: string) => (first ||= p, first.split('/').length - p.split('/').length)
+  // .git directory one level up; a decisions.md three levels up, above the repository
+  on('fs.stat', (_$, e: any) => (
+    e.path.endsWith('/decisions.md') && depth(e.path) === 3 ? { value: { kind: 'file', size: 9, mtimeMs: 5, isLink: false } }
+    : e.path.endsWith('/.git') && depth(e.path.replace(/\/\.git$/, '/decisions.md')) === 1 ? { value: { kind: 'dir', size: 0, mtimeMs: 1, isLink: false } }
+    : { deny: 'ENOENT' }) as any)
+  on('fs.read', () => ({ value: '- [ ] よそのファイル\n' }))
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('config.list', () => ({ value: [] }) as any)
+  on('env.get', (_$, e: any) => ({ value: e.name === 'LANG' ? 'ja_JP.UTF-8' : undefined }) as any)
+  on('command.register', (_$, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }) as any)
+  on('ui.status', () => ({ value: undefined }))
+  on('clock.every', () => ({ value: undefined }) as any)
+  await $.session.start({ cwd: '/repo/sub', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
+  expect(JSON.stringify(await ui.drawn())).not.toContain('よそのファイル')
 })

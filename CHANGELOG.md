@@ -5,6 +5,14 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [decision-pane 0.1.3] - 2026-11-07
+
+### Fixed
+- `decision-pane`: the upward search for `decisions.md` stops at the repository root (the first folder with a
+  `.git` directory; a worktree's `.git` file does not stop it) and takes only a regular file, not a link. Outside
+  a repository it reads the working directory's own. 0.1.2 walked up to 12 folders and could read, and on OK
+  write, a `decisions.md` above the repository (flagged by the security review).
+
 ## [decision-pane 0.1.2] - 2026-11-07
 
 ### Fixed

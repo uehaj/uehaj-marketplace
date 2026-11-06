@@ -67,18 +67,23 @@ function parse(text: string): Item[] {
   })
 }
 
-// The decisions.md this pane shows: the nearest one in the working directory or above it, so a session that cd's
-// into a subfolder (or a worktree inside the repository) keeps the repository's list; with none, the working
-// directory's own, where one would be created.
+// The decisions.md this pane shows: the nearest regular file (not a link) at or above the working directory, but
+// never above the repository root (the first folder with a .git directory; a worktree's .git file does not stop the
+// walk), so a session that cd's into a subfolder or a nested worktree keeps the repository's list, and a stray
+// decisions.md above the repository is never read or written. Outside any repository: the working directory's own.
 let path = FILE
 const UP = 12
 async function find($: Engine) {
+  const stat = (p: string) => $.fs.stat(p).catch(() => undefined)
+  let found: { p: string, stat: Awaited<ReturnType<typeof stat>> } | undefined
   for (let k = 0; k <= UP; k++) {
-    const p = '../'.repeat(k) + FILE
-    const stat = await $.fs.stat(p).catch(() => undefined)
-    if (stat) return { p, stat }
+    const up = '../'.repeat(k)
+    const f = await stat(up + FILE)
+    if (!found && f?.kind === 'file' && !f.isLink) found = { p: up + FILE, stat: f }
+    if ((await stat(up + '.git'))?.kind === 'dir') return found ?? { p: FILE, stat: await stat(FILE) }
   }
-  return { p: FILE, stat: undefined }
+  const here = await stat(FILE) // no repository root within reach: only the working directory's own
+  return { p: FILE, stat: here?.kind === 'file' && !here.isLink ? here : undefined }
 }
 
 async function load($: Engine, force = false) {
