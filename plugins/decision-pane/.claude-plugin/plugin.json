@@ -1,7 +1,7 @@
 {
   "name": "decision-pane",
   "description": "A pane of the decisions in decisions.md waiting on you. OK settles an item, Hold folds it away, a comment keeps it open for the AI to answer and refine; held and settled items fold into their own sections. Icons and colors show whose turn it is. Setup: add the README's CLAUDE.md section, so the AI writes its open questions to decisions.md and reads it with the Read tool.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Junji UEHARA",
     "url": "https://github.com/uehaj"
