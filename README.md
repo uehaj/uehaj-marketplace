@@ -66,9 +66,11 @@ is waiting on does not scroll away in the chat. Each item is a card whose color 
   (`  - 回答: ...`) and refine the item's text.
 
 The status line shows the open and held counts; `/decisions` opens the pane when the terminal is too narrow to
-open it unasked. It calls no model: telling the AI about a change is left to whatever watches `decisions.md`.
-The line format is the contract with that watcher; see
-[plugins/decision-pane/README.md](plugins/decision-pane/README.md) (Japanese). Needs
+open it unasked. It calls no model and sends the AI nothing: a change reaches the AI because Claude Code attaches
+the diff of a file the AI has read with the Read tool to the AI's next turn (your next message, or a background
+task's notice). So the AI must read `decisions.md` with Read early in the session, and something must tell it to
+write its open questions there: add the CLAUDE.md section given in
+[plugins/decision-pane/README.md](plugins/decision-pane/README.md) (Japanese), which also holds the line format. Needs
 `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, like the playground. Install it at the user scope and it loads in the
 desktop app's local sessions too.
 
