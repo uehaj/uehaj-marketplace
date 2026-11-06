@@ -53,3 +53,21 @@ for (const surface of ['terminal', 'desktop'] as const) {
     expect(JSON.stringify(await ui.find({ key: 'done-1' }))).toContain('2026-10-01 09:00')
   })
 }
+
+test('decisions.md が無いときだけ、CLAUDE.md への追記を案内する', async ($, on) => {
+  let exists = false
+  on('fs.stat', () => (exists ? { value: { kind: 'file', size: 0, mtimeMs: 1, isLink: false } } : { deny: 'ENOENT' }) as any)
+  on('fs.read', () => ({ value: '' }))
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('command.register', (_$, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }) as any)
+  on('ui.status', () => ({ value: undefined }))
+  on('clock.every', () => ({ value: undefined }) as any)
+  await $.session.start({ cwd: '/w', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
+  expect(JSON.stringify(await ui.drawn())).toContain('CLAUDE.md への追記')
+
+  exists = true
+  await $.session.start({ cwd: '/w', surface: 'terminal', isInteractive: true }) // reloads decisions.md
+  expect(JSON.stringify(await ui.drawn())).not.toContain('CLAUDE.md への追記')
+})

@@ -9,6 +9,8 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 - `decision-pane`: the README says how a change reaches the AI (Claude Code attaches the diff of a file the AI
   read with the Read tool to its next turn; no separate watcher exists) and gives the CLAUDE.md section the pane
   needs, so an install does more than draw an empty pane.
+- `decision-pane`: with no `decisions.md` in the working directory, the empty pane says a CLAUDE.md section is
+  needed and where it is; the plugin's description says so too, where `/plugin` shows it before install.
 
 ## [uehaj 0.6.1, decision-pane 0.1.0] - 2026-11-07
 

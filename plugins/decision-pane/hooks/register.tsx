@@ -12,6 +12,7 @@ const COMMENT = '- コメント '
 const items = atom({ plugin: 'decision-pane', key: 'items' } as const, [] as Item[])
 const isHeldOpen = atom({ plugin: 'decision-pane', key: 'isHeldOpen' } as const, false)
 const isDoneOpen = atom({ plugin: 'decision-pane', key: 'isDoneOpen' } as const, false)
+const hasFile = atom({ plugin: 'decision-pane', key: 'hasFile' } as const, true)
 
 let seenMtime = -1
 
@@ -41,6 +42,7 @@ async function load($: Engine, force = false) {
   seenMtime = mtime
   const all = parse(stat ? await $.fs.read(FILE) : '')
   await update($, items, () => all)
+  await update($, hasFile, () => !!stat)
   const held = all.filter(item => item.mark === 'held').length
   const open = all.filter(item => item.mark === 'open').length
   $.ui.status(open || held ? `未決 ${open}${held ? `・保留 ${held}` : ''}` : undefined)
@@ -152,6 +154,10 @@ export const register: Register = on => {
         <Box flexDirection="column">
           <Text color="success" bold>✨ 未決なし</Text>
           <Text dimColor>{FILE} に `- [ ] 文面` を足すとここに出る</Text>
+          {!(await read($, hasFile)) && (
+            // no decisions.md yet: the usual cause on a fresh install is a CLAUDE.md that never tells the AI to write one
+            <Text color="warning">⚙ {FILE} がまだ無い。AI に問いを書かせ、OK やコメントを届けるには、CLAUDE.md への追記が要る（decision-pane の README「CLAUDE.md に足すもの」）</Text>
+          )}
           {heldSection}
           {doneSection}
         </Box>
