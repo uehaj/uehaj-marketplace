@@ -5,6 +5,13 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [decision-pane 0.1.2] - 2026-11-07
+
+### Fixed
+- `decision-pane`: the pane reads the nearest `decisions.md` at or above the working directory, so a session that
+  cd's into a subfolder or a worktree inside the repository still shows the repository's list (it showed
+  "nothing open"). OK, Hold and comments write to that same file.
+
 ### Changed
 - `decision-pane`: the pane speaks English or Japanese: Claude Code's `language` setting when `/config` has
   one, else `LC_ALL` / `LANG`, else English. The marks it writes into `decisions.md` (承認, 保留, コメント, 回答)
