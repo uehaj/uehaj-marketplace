@@ -5,8 +5,10 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [uehaj 0.6.1, decision-pane 0.1.0] - 2026-11-07
+
 ### Fixed
-- `uehaj` `sys1grep` skill: regex terms are written `-P '/RE/'`, not `-e '/RE/'`, which sys1grep 0.5.0
+- `uehaj` 0.6.1, `sys1grep` skill: regex terms are written `-P '/RE/'`, not `-e '/RE/'`, which sys1grep 0.5.0
   refuses (uehaj/sys1grep#244, uehaj/sys1grep#132).
 
 ### Added
