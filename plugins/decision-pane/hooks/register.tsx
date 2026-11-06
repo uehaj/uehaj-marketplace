@@ -75,15 +75,16 @@ let path = FILE
 const UP = 12
 async function find($: Engine) {
   const stat = (p: string) => $.fs.stat(p).catch(() => undefined)
+  const regular = (st: Awaited<ReturnType<typeof stat>>) => (st?.kind === 'file' && !st.isLink ? st : undefined)
   let found: { p: string, stat: Awaited<ReturnType<typeof stat>> } | undefined
   for (let k = 0; k <= UP; k++) {
     const up = '../'.repeat(k)
     const f = await stat(up + FILE)
-    if (!found && f?.kind === 'file' && !f.isLink) found = { p: up + FILE, stat: f }
-    if ((await stat(up + '.git'))?.kind === 'dir') return found ?? { p: FILE, stat: await stat(FILE) }
+    if (!found && regular(f)) found = { p: up + FILE, stat: f }
+    if ((await stat(up + '.git'))?.kind === 'dir') return found ?? { p: FILE, stat: regular(await stat(FILE)) }
   }
   const here = await stat(FILE) // no repository root within reach: only the working directory's own
-  return { p: FILE, stat: here?.kind === 'file' && !here.isLink ? here : undefined }
+  return { p: FILE, stat: regular(here) }
 }
 
 async function load($: Engine, force = false) {
@@ -108,6 +109,9 @@ function stamp(ms: number) {
 
 // Rewrites the file around the item's line; a line gone since the draw is left alone.
 async function edit($: Engine, item: Item, change: (lines: string[], i: number, at: string) => void) {
+  // the file may have changed since find(): a link or a non-file now is left alone
+  const st = await $.fs.stat(path).catch(() => undefined)
+  if (st?.kind !== 'file' || st.isLink) return load($, true)
   const lines = (await $.fs.read(path)).split('\n')
   const i = lines.findIndex(l => lineOf(l, item))
   if (i >= 0) {

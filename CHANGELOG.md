@@ -5,6 +5,13 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [decision-pane 0.1.4] - 2026-11-07
+
+### Fixed
+- `decision-pane`: a `decisions.md` that is a link is never read, also in the working directory when the walk
+  stops at the repository root (0.1.3 checked links only above it), and OK, Hold and comments look at the file
+  again just before they write and leave a link or non-file alone.
+
 ## [decision-pane 0.1.3] - 2026-11-07
 
 ### Fixed
