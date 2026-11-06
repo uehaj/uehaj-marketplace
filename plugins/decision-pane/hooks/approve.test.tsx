@@ -160,3 +160,19 @@ test('リポジトリの最上位（.git フォルダ）より上の decisions.m
   const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
   expect(JSON.stringify(await ui.drawn())).not.toContain('よそのファイル')
 })
+
+test('decisions.md がシンボリックリンクなら読まない', async ($, on) => {
+  on('fs.stat', (_$, e: any) => (e.path.endsWith('/decisions.md') ? { value: { kind: 'file', size: 9, mtimeMs: 5, isLink: true } }
+    : e.path.endsWith('/.git') ? { value: { kind: 'dir', size: 0, mtimeMs: 1, isLink: false } } : { deny: 'ENOENT' }) as any)
+  on('fs.read', () => ({ value: '- [ ] リンク先の項目\n' }))
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('config.list', () => ({ value: [] }) as any)
+  on('env.get', (_$, e: any) => ({ value: e.name === 'LANG' ? 'ja_JP.UTF-8' : undefined }) as any)
+  on('command.register', (_$, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }) as any)
+  on('ui.status', () => ({ value: undefined }))
+  on('clock.every', () => ({ value: undefined }) as any)
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
+  expect(JSON.stringify(await ui.drawn())).not.toContain('リンク先の項目')
+})
