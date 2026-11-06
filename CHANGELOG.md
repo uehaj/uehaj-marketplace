@@ -5,6 +5,10 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Fixed
+- `uehaj` `sys1grep` skill: regex terms are written `-P '/RE/'`, not `-e '/RE/'`, which sys1grep 0.5.0
+  refuses (uehaj/sys1grep#244, uehaj/sys1grep#132).
+
 ### Added
 - `decision-pane` 0.1.0: a pane of the open items (`- [ ]`) in `decisions.md`. ✔ OK marks an item
   `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to a folded settled section; ⏸ Hold marks it
