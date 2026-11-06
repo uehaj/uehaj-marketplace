@@ -13,6 +13,38 @@ const items = atom({ plugin: 'decision-pane', key: 'items' } as const, [] as Ite
 const isHeldOpen = atom({ plugin: 'decision-pane', key: 'isHeldOpen' } as const, false)
 const isDoneOpen = atom({ plugin: 'decision-pane', key: 'isDoneOpen' } as const, false)
 const hasFile = atom({ plugin: 'decision-pane', key: 'hasFile' } as const, true)
+const lang = atom({ plugin: 'decision-pane', key: 'lang' } as const, 'en' as Lang)
+
+// What the pane says. The marks it writes into decisions.md (承認, 保留, コメント, 回答) are the file's contract and
+// stay Japanese in every language.
+type Lang = 'en' | 'ja'
+const T = {
+  en: {
+    status: (open: number, held: number) => `open ${open}${held ? ` · held ${held}` : ''}`,
+    cmd: 'Show the open items of decisions.md in a pane', opened: 'Opened the Decisions pane.',
+    you: 'you', ai: 'AI', lp: ' (', sep: ', ', rp: ')', held: (n: number) => `⏸ Held ${n}`, resume: '▶ Resume', settled: (n: number) => `✅ Settled ${n}`,
+    approved: 'approved', none: '✨ Nothing open', howTo: `Add a \`- [ ] text\` line to ${FILE} to list it here`,
+    setup: `⚙ No ${FILE} yet. For the AI to write its questions there and get your OK and comments, CLAUDE.md needs a section (decision-pane README, "CLAUDE.md に足すもの")`,
+    open: (n: number) => `📋 Open ${n}`, aiTurn: '⏳ Waiting on the AI', yourTurn: '👉 Waiting on you',
+    comment: 'Comment or question (Enter sends)', send: 'Send', hold: '⏸ Hold',
+  },
+  ja: {
+    status: (open: number, held: number) => `未決 ${open}${held ? `・保留 ${held}` : ''}`,
+    cmd: 'decisions.md の未決をペインに出す', opened: 'Decisions ペインを開いた。',
+    you: 'あなた', ai: 'AI', lp: '（', sep: '・', rp: '）', held: (n: number) => `⏸ 保留 ${n} 件`, resume: '▶ 戻す', settled: (n: number) => `✅ 決着 ${n} 件`,
+    approved: '承認', none: '✨ 未決なし', howTo: `${FILE} に \`- [ ] 文面\` を足すとここに出る`,
+    setup: `⚙ ${FILE} がまだ無い。AI に問いを書かせ、OK やコメントを届けるには、CLAUDE.md への追記が要る（decision-pane の README「CLAUDE.md に足すもの」）`,
+    open: (n: number) => `📋 未決 ${n} 件`, aiTurn: '⏳ AI の回答待ち', yourTurn: '👉 あなたの判断待ち',
+    comment: 'コメント・質問（Enter で送る）', send: '送る', hold: '⏸ 保留',
+  },
+}
+
+// Claude Code's own language setting when /config has one, else LC_ALL / LANG; English otherwise.
+async function langOf($: Engine): Promise<Lang> {
+  const set = await $.config.list().then(rows => rows.find(r => r.key === 'language')?.value, () => undefined)
+  const env = set === undefined || set === '' ? await $.env.get('LC_ALL').catch(() => undefined) || await $.env.get('LANG').catch(() => undefined) : undefined
+  return /^(ja|japanese|日本語)/i.test(String(set ?? env ?? '')) ? 'ja' : 'en'
+}
 
 let seenMtime = -1
 
@@ -45,7 +77,7 @@ async function load($: Engine, force = false) {
   await update($, hasFile, () => !!stat)
   const held = all.filter(item => item.mark === 'held').length
   const open = all.filter(item => item.mark === 'open').length
-  $.ui.status(open || held ? `未決 ${open}${held ? `・保留 ${held}` : ''}` : undefined)
+  $.ui.status(open || held ? T[await read($, lang)].status(open, held) : undefined)
 }
 
 function stamp(ms: number) {
@@ -85,7 +117,9 @@ const comment = ($: Engine, item: Item, body: string) =>
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'decisions', description: 'decisions.md の未決をペインに出す' })
+    const l = await langOf($)
+    await update($, lang, () => l)
+    await $.command.register({ name: 'decisions', description: T[await read($, lang)].cmd })
     void $.ui.open({ id: PANE, title: 'Decisions' })
     await load($, true)
     $.clock.every(3000, () => load($))
@@ -94,7 +128,7 @@ export const register: Register = on => {
 
   on('command.run', { command: 'decisions' }, async $ => {
     await $.ui.open({ id: PANE, title: 'Decisions' })
-    return { text: 'Decisions ペインを開いた。' }
+    return { text: T[await read($, lang)].opened }
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
@@ -102,6 +136,7 @@ export const register: Register = on => {
     const { Box, Text, Button } = table
     const Input = 'Input' in table ? table.Input : undefined
     const all = await read($, items)
+    const t = T[await read($, lang)]
     const list = all.filter(item => item.mark === 'open')
     const held = all.filter(item => item.mark === 'held')
     // Newest settlement first: an approved line stays where it was in the file.
@@ -113,7 +148,7 @@ export const register: Register = on => {
 
     const noteLine = (note: string) => {
       const c = note.match(/^- コメント \d{4}-\d\d-\d\d (\d\d:\d\d): (.*)$/)
-      if (c) return <Text><Text color="suggestion" bold>💬 あなた</Text> <Text dimColor>{c[1]}</Text>  {c[2]}</Text>
+      if (c) return <Text><Text color="suggestion" bold>💬 {t.you}</Text> <Text dimColor>{c[1]}</Text>  {c[2]}</Text>
       const a = note.match(/^- 回答: (.*)$/)
       if (a) return <Text><Text color="claude" bold>🤖 AI</Text>  {a[1]}</Text>
       return <Text dimColor>{note}</Text>
@@ -122,13 +157,13 @@ export const register: Register = on => {
     const heldSection = held.length > 0 && (
       <Box flexDirection="column" marginTop={1}>
         <Button key="held-toggle" plain onPress={() => update($, isHeldOpen, v => !v)}>
-          {showHeld ? '▾' : '▸'} <Text color="subtle">⏸ 保留 {held.length} 件</Text>
+          {showHeld ? '▾' : '▸'} <Text color="subtle">{t.held(held.length)}</Text>
         </Button>
         {showHeld && held.map((item, j) => (
           <Box key={`held-${j}`} flexDirection="column" borderStyle="round" borderColor="subtle" paddingX={1}>
             <Text dimColor>⏸ {item.text}</Text>
             {item.notes.map(noteLine)}
-            <Button key={`resume-${j}`} onPress={() => resume($, item)}>▶ 戻す</Button>
+            <Button key={`resume-${j}`} onPress={() => resume($, item)}>{t.resume}</Button>
           </Box>
         ))}
       </Box>
@@ -137,12 +172,12 @@ export const register: Register = on => {
     const doneSection = done.length > 0 && (
       <Box flexDirection="column" marginTop={held.length > 0 ? 0 : 1}>
         <Button key="done-toggle" plain onPress={() => update($, isDoneOpen, v => !v)}>
-          {showDone ? '▾' : '▸'} <Text color="success">✅ 決着 {done.length} 件</Text>
+          {showDone ? '▾' : '▸'} <Text color="success">{t.settled(done.length)}</Text>
         </Button>
         {showDone && done.map((item, j) => (
           <Box key={`done-${j}`} flexDirection="column" borderStyle="round" borderColor="success" paddingX={1}>
             <Text><Text color="success">✅</Text> {item.text}</Text>
-            {item.at && <Text dimColor>承認 {item.at}</Text>}
+            {item.at && <Text dimColor>{t.approved} {item.at}</Text>}
             {item.notes.map(noteLine)}
           </Box>
         ))}
@@ -152,11 +187,11 @@ export const register: Register = on => {
     if (list.length === 0) {
       return (
         <Box flexDirection="column">
-          <Text color="success" bold>✨ 未決なし</Text>
-          <Text dimColor>{FILE} に `- [ ] 文面` を足すとここに出る</Text>
+          <Text color="success" bold>{t.none}</Text>
+          <Text dimColor>{t.howTo}</Text>
           {!(await read($, hasFile)) && (
             // no decisions.md yet: the usual cause on a fresh install is a CLAUDE.md that never tells the AI to write one
-            <Text color="warning">⚙ {FILE} がまだ無い。AI に問いを書かせ、OK やコメントを届けるには、CLAUDE.md への追記が要る（decision-pane の README「CLAUDE.md に足すもの」）</Text>
+            <Text color="warning">{t.setup}</Text>
           )}
           {heldSection}
           {doneSection}
@@ -166,8 +201,8 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Text bold>
-          📋 未決 {list.length} 件
-          <Text dimColor>（<Text color="warning">あなた {list.length - waitingAi}</Text>・AI {waitingAi}）</Text>
+          {t.open(list.length)}
+          <Text dimColor>{t.lp}<Text color="warning">{t.you} {list.length - waitingAi}</Text>{t.sep}{t.ai} {waitingAi}{t.rp}</Text>
         </Text>
         {list.map((item, i) => {
           const isAi = aiTurn(item)
@@ -175,17 +210,17 @@ export const register: Register = on => {
             <Box key={`row-${i}`} flexDirection="column" borderStyle="round"
               borderColor={isAi ? 'subtle' : 'warning'} paddingX={1}>
               {isAi
-                ? <Text color="subtle">⏳ AI の回答待ち</Text>
-                : <Text color="warning" bold>👉 あなたの判断待ち</Text>}
+                ? <Text color="subtle">{t.aiTurn}</Text>
+                : <Text color="warning" bold>{t.yourTurn}</Text>}
               <Text bold>❓ {item.text}</Text>
               {item.notes.map(noteLine)}
               {Input && (
-                <Input key={`c-${i}`} label="💬 " placeholder="コメント・質問（Enter で送る）" submitLabel="送る"
+                <Input key={`c-${i}`} label="💬 " placeholder={t.comment} submitLabel={t.send}
                   onSubmit={value => comment($, item, value)} />
               )}
               <Box flexDirection="row" gap={1}>
                 <Button key={`ok-${i}`} variant="primary" onPress={() => approve($, item)}>✔ OK</Button>
-                <Button key={`hold-${i}`} onPress={() => hold($, item)}>⏸ 保留</Button>
+                <Button key={`hold-${i}`} onPress={() => hold($, item)}>{t.hold}</Button>
               </Box>
             </Box>
           )
