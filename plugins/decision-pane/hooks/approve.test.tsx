@@ -111,3 +111,27 @@ test('言語: /config の language が日本語なら、LANG が英語でも日�
   const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
   expect(JSON.stringify(await ui.drawn())).toContain('あなたの判断待ち')
 })
+
+test('作業フォルダより上の decisions.md を見つけ、そこに書く', async ($, on) => {
+  mock.clock(on, { now: Date.UTC(2026, 9, 12, 3, 30) })
+  let file = '- [ ] 上の階の項目\n'
+  const wrote: string[] = []
+  // the engine hands the hook an absolute path: the file is the one two folders above the first path asked for
+  let first = ''
+  const isUp2 = (p: string) => (first ||= p, p.split('/').length === first.split('/').length - 2)
+  on('fs.stat', (_$, e: any) => (isUp2(e.path) ? { value: { kind: 'file', size: file.length, mtimeMs: 5, isLink: false } } : { deny: 'ENOENT' }) as any)
+  on('fs.read', (_$, e: any) => ({ value: isUp2(e.path) ? file : '' }))
+  on('fs.write', (_$, e: any) => { wrote.push(isUp2(e.path) ? 'up2' : e.path); file = e.text; return { value: undefined } })
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('config.list', () => ({ value: [] }) as any)
+  on('env.get', (_$, e: any) => ({ value: e.name === 'LANG' ? 'ja_JP.UTF-8' : undefined }) as any)
+  on('command.register', (_$, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }) as any)
+  on('ui.status', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/repo/a/b', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
+  expect(JSON.stringify(await ui.drawn())).toContain('上の階の項目')
+  await ui.press({ key: 'ok-0' })
+  expect(wrote).toEqual(['up2'])
+  expect(file).toMatch(/^- \[x\] 上の階の項目 \(承認 /)
+})

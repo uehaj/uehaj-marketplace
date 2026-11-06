@@ -67,12 +67,27 @@ function parse(text: string): Item[] {
   })
 }
 
+// The decisions.md this pane shows: the nearest one in the working directory or above it, so a session that cd's
+// into a subfolder (or a worktree inside the repository) keeps the repository's list; with none, the working
+// directory's own, where one would be created.
+let path = FILE
+const UP = 12
+async function find($: Engine) {
+  for (let k = 0; k <= UP; k++) {
+    const p = '../'.repeat(k) + FILE
+    const stat = await $.fs.stat(p).catch(() => undefined)
+    if (stat) return { p, stat }
+  }
+  return { p: FILE, stat: undefined }
+}
+
 async function load($: Engine, force = false) {
-  const stat = await $.fs.stat(FILE).catch(() => undefined)
+  const { p, stat } = await find($)
   const mtime = stat?.mtimeMs ?? 0
-  if (!force && mtime === seenMtime) return
+  if (!force && p === path && mtime === seenMtime) return
+  path = p
   seenMtime = mtime
-  const all = parse(stat ? await $.fs.read(FILE) : '')
+  const all = parse(stat ? await $.fs.read(path) : '')
   await update($, items, () => all)
   await update($, hasFile, () => !!stat)
   const held = all.filter(item => item.mark === 'held').length
@@ -88,11 +103,11 @@ function stamp(ms: number) {
 
 // Rewrites the file around the item's line; a line gone since the draw is left alone.
 async function edit($: Engine, item: Item, change: (lines: string[], i: number, at: string) => void) {
-  const lines = (await $.fs.read(FILE)).split('\n')
+  const lines = (await $.fs.read(path)).split('\n')
   const i = lines.findIndex(l => lineOf(l, item))
   if (i >= 0) {
     change(lines, i, stamp(await $.clock.now()))
-    await $.fs.write(FILE, lines.join('\n'))
+    await $.fs.write(path, lines.join('\n'))
   }
   await load($, true)
 }
