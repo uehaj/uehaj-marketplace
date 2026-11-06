@@ -57,6 +57,23 @@
       ]
     },
     {
+      "name": "requirements-tool",
+      "source": "./plugins/requirements-tool",
+      "description": "A lightweight requirements-engineering tool: requirements kept as one markdown file each, implicit-requirement detection on every prompt, deterministic lint / view / review CLIs, and /req-init. Texts are in Japanese.",
+      "version": "0.48.0",
+      "author": {
+        "name": "Junji UEHARA"
+      },
+      "homepage": "https://github.com/uehaj/uehaj-marketplace/tree/main/plugins/requirements-tool",
+      "license": "MIT",
+      "keywords": [
+        "requirements-engineering",
+        "babok",
+        "traceability",
+        "adr"
+      ]
+    },
+    {
       "name": "decision-pane",
       "source": "./plugins/decision-pane",
       "description": "A pane of the decisions in decisions.md waiting on you. OK settles an item, Hold folds it away, a comment keeps it open for the AI to answer and refine; held and settled items fold into their own sections. Icons and colors show whose turn it is. Needs CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1.",

@@ -1,0 +1,15 @@
+{
+  "description": "requirements-tool プラグインのフック。他プロジェクトへインストールされたときに効く（このリポジトリ自身の直接運用は .claude/settings.json 側で別途配線済み。ADR-004・SR-26）。",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/on-prompt-submit.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

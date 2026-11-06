@@ -1,0 +1,14 @@
+{
+  "name": "requirements-tool",
+  "private": true,
+  "type": "module",
+  "description": "ライトウェイト要求工学ツール — CLI スクリプト群（Node 23.6+ の型剥がしで直接実行。ビルド工程・外部依存なし）",
+  "bin": {
+    "req": "./bin/req.ts"
+  },
+  "scripts": {
+    "lint": "node scripts/req_lint.ts",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage.lcov --test-reporter=spec --test-reporter-destination=stdout \"tests/**/*.test.ts\""
+  }
+}
