@@ -5,6 +5,11 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Changed
+- `decision-pane`: the pane speaks English or Japanese: Claude Code's `language` setting when `/config` has
+  one, else `LC_ALL` / `LANG`, else English. The marks it writes into `decisions.md` (承認, 保留, コメント, 回答)
+  stay Japanese in every language, so existing files and CLAUDE.md sections keep working.
+
 ## [decision-pane 0.1.1] - 2026-11-07
 
 ### Changed
