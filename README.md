@@ -56,10 +56,12 @@ by the name the terminal reports, and a libghostty-based multiplexer such as her
 
 A pane listing the open items (`- [ ] ...`) of the nearest `decisions.md` at or above the working directory, so a decision the AI
 is waiting on does not scroll away in the chat. Each item is a card whose color and icon say whose turn it is
-(👉 yours, ⏳ the AI's), with the comments (💬) and answers (🤖) under it, a comment field, and two buttons:
+(👉 yours, ⏳ the AI's), with the comments (💬) and answers (🤖) under it, a comment field, and its buttons:
 
 - **✔ OK** rewrites the line as `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to the folded ✅ settled section,
   newest first.
+- An **option** button, one per child line `- (a) ...`, settles the item as OK does and adds `  - 選択: (a) ...`
+  under it.
 - **⏸ Hold** rewrites it as `- [~] ... (保留 YYYY-MM-DD HH:MM)` and folds it into the ⏸ held section, from which
   **▶ Resume** puts it back.
 - A **comment** adds `  - コメント YYYY-MM-DD HH:MM: ...` under the item and leaves it open, so the AI can answer
