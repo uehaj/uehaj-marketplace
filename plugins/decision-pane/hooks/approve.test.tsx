@@ -179,7 +179,7 @@ test('decisions.md がシンボリックリンクなら読まない', async ($, 
 
 test('子行 `- (a) …` は選択肢のボタンになり、押すと承認して `- 選択: (a) …` を足す', async ($, on) => {
   mock.clock(on, { now: Date.UTC(2026, 9, 12, 3, 30) })
-  let file = '- [ ] 保存先: どれにするか。推奨は、(a)\n  - (a) SQLite\n  - (b) Postgres（要サーバー）\n  - 回答: 前の答え\n- [ ] 別件\n'
+  let file = '- [ ] 保存先: どれにするか。推奨は、(a)\n  - (a) SQLite\n  - (b) Postgres（要サーバー）\n  - 回答: 前の答え\n- [ ] 別件\n  - (注) 補足\n  - (1) 手順\n'
   on('fs.stat', () => ({ value: { kind: 'file', size: file.length, mtimeMs: file.length, isLink: false } }) as any)
   on('fs.read', () => ({ value: file }))
   on('fs.write', (_$, e) => { file = e.text; return { value: undefined } })

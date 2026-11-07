@@ -11,7 +11,7 @@ const PREFIX: Record<Mark, string> = { open: OPEN, held: HELD, done: '- [x] ' }
 const COMMENT = '- コメント '
 const CHOSEN = '- 選択: '
 // A child line `- (a) text` is an option: the pane shows it as a button that settles the item with that choice.
-const OPTION = /^- \(([^()\s]{1,8})\) (.+)$/
+const OPTION = /^- \(([a-z])\) (.+)$/i // one letter, so a note like `- (注) …` or `- (1) …` stays a note
 const items = atom({ plugin: 'decision-pane', key: 'items' } as const, [] as Item[])
 const isHeldOpen = atom({ plugin: 'decision-pane', key: 'isHeldOpen' } as const, false)
 const isDoneOpen = atom({ plugin: 'decision-pane', key: 'isDoneOpen' } as const, false)
