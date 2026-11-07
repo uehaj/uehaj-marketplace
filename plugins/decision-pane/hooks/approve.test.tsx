@@ -199,4 +199,26 @@ test('子行 `- (a) …` は選択肢のボタンになり、押すと承認し�
   expect(lines.slice(1, 6)).toEqual(['  - (a) SQLite', '  - (b) Postgres（要サーバー）', '  - 回答: 前の答え', '  - 選択: (b) Postgres（要サーバー）', '- [ ] 別件'])
   await ui.press({ key: 'done-toggle' })
   expect(JSON.stringify(await ui.find({ key: 'done-0' }))).toContain('☑ 選択')
+  await ui.press({ key: 'reopen-0' })
+  expect(file.split('\n').slice(0, 5)).toEqual(['- [ ] 保存先: どれにするか。推奨は、(a)', '  - (a) SQLite', '  - (b) Postgres（要サーバー）', '  - 回答: 前の答え', '- [ ] 別件'])
+  expect(await ui.find({ key: 'pick-0-0' })).toBeDefined()
+})
+
+test('同じ文面の決着が 2 つあるとき、未決に戻すのは押したカードの行', async ($, on) => {
+  mock.clock(on, { now: Date.UTC(2026, 10, 3) })
+  let file = '- [x] 同じ (承認 2026-11-01 10:00)\n- [x] 同じ (承認 2026-11-02 11:00)\n'
+  on('fs.stat', () => ({ value: { kind: 'file', size: file.length, mtimeMs: file.length, isLink: false } }) as any)
+  on('fs.read', () => ({ value: file }))
+  on('fs.write', (_$, e) => { file = e.text; return { value: undefined } })
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('config.list', () => ({ value: [] }) as any)
+  on('env.get', () => ({ value: undefined }) as any)
+  on('command.register', (_$, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }) as any)
+  on('ui.status', () => ({ value: undefined }))
+  await $.session.start({ cwd: '/w', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount({ plugin: 'decision-pane', surface: 'terminal', component: 'Pane', props: PROPS, requestId: 'decision-pane' })
+  await ui.press({ key: 'done-toggle' })
+  await ui.press({ key: 'reopen-0' }) // newest first: the 11:00 card
+  expect(file).toBe('- [x] 同じ (承認 2026-11-01 10:00)\n- [ ] 同じ\n')
 })
