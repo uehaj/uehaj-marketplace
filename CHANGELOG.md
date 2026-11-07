@@ -5,6 +5,14 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Fixed
+- `run-interactive`: a working directory or `--log` path with spaces no longer breaks the command it runs in the
+  other pane.
+
+### Added
+- CI (`.github/workflows/check.yml`): `scripts/check-versions.py` (each plugin's version in `marketplace.json`
+  equals its `plugin.json`), the gh-issue-map tests, `claude plugin validate`, the decision-pane tests.
+
 ## [decision-pane 0.1.6] - 2026-11-07
 
 ### Added

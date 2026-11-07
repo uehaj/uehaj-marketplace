@@ -25,8 +25,9 @@ start)
   self=$(herdr pane current | jq_py 'json.load(sys.stdin)["result"]["pane"]["pane_id"]')
   pane=$(herdr pane split "$self" --direction right | jq_py 'json.load(sys.stdin)["result"]["pane"]["pane_id"]')
   q=$(printf %q "$cmd; echo RI_EXIT=\$?")   # ; や引用符を含んでも 1 つのコマンド列として渡し、終了マーカーを出す
-  if [ "$(uname -s)" = Darwin ]; then wrapped="script -q $log bash -c $q"; else wrapped="script -q -c $q $log"; fi
-  herdr pane run "$pane" "cd $PWD && $wrapped"
+  ql=$(printf %q "$log")   # 空白を含むパスも 1 語のまま渡す
+  if [ "$(uname -s)" = Darwin ]; then wrapped="script -q $ql bash -c $q"; else wrapped="script -q -c $q $ql"; fi
+  herdr pane run "$pane" "cd $(printf %q "$PWD") && $wrapped"
   if [ -n "$prompt" ]; then
     herdr pane wait-output "$pane" --regex "$prompt" --timeout 15000 >/dev/null \
       || { echo "prompt not seen; screen:" >&2; herdr pane read "$pane" --source visible --lines 20 >&2; }
