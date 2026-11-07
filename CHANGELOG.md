@@ -5,6 +5,12 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [decision-pane 0.1.5] - 2026-11-07
+
+### Added
+- `decision-pane`: options. A child line `- (a) text` under an open item shows as a button; pressing it settles
+  the item as OK does and adds the child line `- 選択: (a) text`, so the AI reads which option was chosen.
+
 ## [decision-pane 0.1.4] - 2026-11-07
 
 ### Fixed

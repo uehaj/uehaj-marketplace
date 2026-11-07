@@ -9,6 +9,9 @@ const OPEN = '- [ ] '
 const HELD = '- [~] '
 const PREFIX: Record<Mark, string> = { open: OPEN, held: HELD, done: '- [x] ' }
 const COMMENT = '- コメント '
+const CHOSEN = '- 選択: '
+// A child line `- (a) text` is an option: the pane shows it as a button that settles the item with that choice.
+const OPTION = /^- \(([a-z])\) (.+)$/i // one letter, so a note like `- (注) …` or `- (1) …` stays a note
 const items = atom({ plugin: 'decision-pane', key: 'items' } as const, [] as Item[])
 const isHeldOpen = atom({ plugin: 'decision-pane', key: 'isHeldOpen' } as const, false)
 const isDoneOpen = atom({ plugin: 'decision-pane', key: 'isDoneOpen' } as const, false)
@@ -23,7 +26,7 @@ const T = {
     status: (open: number, held: number) => `open ${open}${held ? ` · held ${held}` : ''}`,
     cmd: 'Show the open items of decisions.md in a pane', opened: 'Opened the Decisions pane.',
     you: 'you', ai: 'AI', lp: ' (', sep: ', ', rp: ')', held: (n: number) => `⏸ Held ${n}`, resume: '▶ Resume', settled: (n: number) => `✅ Settled ${n}`,
-    approved: 'approved', none: '✨ Nothing open', howTo: `Add a \`- [ ] text\` line to ${FILE} to list it here`,
+    approved: 'approved', chose: 'chose', none: '✨ Nothing open', howTo: `Add a \`- [ ] text\` line to ${FILE} to list it here`,
     setup: `⚙ No ${FILE} yet. For the AI to write its questions there and get your OK and comments, CLAUDE.md needs a section (decision-pane README, "CLAUDE.md に足すもの")`,
     open: (n: number) => `📋 Open ${n}`, aiTurn: '⏳ Waiting on the AI', yourTurn: '👉 Waiting on you',
     comment: 'Comment or question (Enter sends)', send: 'Send', hold: '⏸ Hold',
@@ -32,7 +35,7 @@ const T = {
     status: (open: number, held: number) => `未決 ${open}${held ? `・保留 ${held}` : ''}`,
     cmd: 'decisions.md の未決をペインに出す', opened: 'Decisions ペインを開いた。',
     you: 'あなた', ai: 'AI', lp: '（', sep: '・', rp: '）', held: (n: number) => `⏸ 保留 ${n} 件`, resume: '▶ 戻す', settled: (n: number) => `✅ 決着 ${n} 件`,
-    approved: '承認', none: '✨ 未決なし', howTo: `${FILE} に \`- [ ] 文面\` を足すとここに出る`,
+    approved: '承認', chose: '選択', none: '✨ 未決なし', howTo: `${FILE} に \`- [ ] 文面\` を足すとここに出る`,
     setup: `⚙ ${FILE} がまだ無い。AI に問いを書かせ、OK やコメントを届けるには、CLAUDE.md への追記が要る（decision-pane の README「CLAUDE.md に足すもの」）`,
     open: (n: number) => `📋 未決 ${n} 件`, aiTurn: '⏳ AI の回答待ち', yourTurn: '👉 あなたの判断待ち',
     comment: 'コメント・質問（Enter で送る）', send: '送る', hold: '⏸ 保留',
@@ -124,6 +127,15 @@ async function edit($: Engine, item: Item, change: (lines: string[], i: number, 
 const approve = ($: Engine, item: Item) =>
   edit($, item, (lines, i, at) => { lines[i] = `- [x] ${item.text} (承認 ${at})` })
 
+// Settles the item with one of its options: the line as OK writes it, plus a `- 選択: (a) text` child line.
+const choose = ($: Engine, item: Item, option: string) =>
+  edit($, item, (lines, i, at) => {
+    lines[i] = `- [x] ${item.text} (承認 ${at})`
+    let end = i + 1
+    while (end < lines.length && isChild(lines[end]!)) end++
+    lines.splice(end, 0, `  ${CHOSEN}${option}`)
+  })
+
 const hold = ($: Engine, item: Item) =>
   edit($, item, (lines, i, at) => { lines[i] = `${HELD}${item.text} (保留 ${at})` })
 
@@ -175,6 +187,7 @@ export const register: Register = on => {
       if (c) return <Text><Text color="suggestion" bold>💬 {t.you}</Text> <Text dimColor>{c[1]}</Text>  {c[2]}</Text>
       const a = note.match(/^- 回答: (.*)$/)
       if (a) return <Text><Text color="claude" bold>🤖 AI</Text>  {a[1]}</Text>
+      if (note.startsWith(CHOSEN)) return <Text><Text color="success" bold>☑ {t.chose}</Text>  {note.slice(CHOSEN.length)}</Text>
       return <Text dimColor>{note}</Text>
     }
 
@@ -237,7 +250,10 @@ export const register: Register = on => {
                 ? <Text color="subtle">{t.aiTurn}</Text>
                 : <Text color="warning" bold>{t.yourTurn}</Text>}
               <Text bold>❓ {item.text}</Text>
-              {item.notes.map(noteLine)}
+              {item.notes.filter(n => !OPTION.test(n)).map(noteLine)}
+              {item.notes.filter(n => OPTION.test(n)).map((n, j) => (
+                <Button key={`pick-${i}-${j}`} onPress={() => choose($, item, n.slice(2))}>{n.slice(2)}</Button>
+              ))}
               {Input && (
                 <Input key={`c-${i}`} label="💬 " placeholder={t.comment} submitLabel={t.send}
                   onSubmit={value => comment($, item, value)} />
