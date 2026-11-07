@@ -126,13 +126,15 @@ async function edit($: Engine, item: Item, change: (lines: string[], i: number, 
   await load($, true)
 }
 
+const settled = (item: Item, at: string) => `- [x] ${item.text} (承認 ${at})`
+
 const approve = ($: Engine, item: Item) =>
-  edit($, item, (lines, i, at) => { lines[i] = `- [x] ${item.text} (承認 ${at})` })
+  edit($, item, (lines, i, at) => { lines[i] = settled(item, at) })
 
 // Settles the item with one of its options: the line as OK writes it, plus a `- 選択: (a) text` child line.
 const choose = ($: Engine, item: Item, option: string) =>
   edit($, item, (lines, i, at) => {
-    lines[i] = `- [x] ${item.text} (承認 ${at})`
+    lines[i] = settled(item, at)
     let end = i + 1
     while (end < lines.length && isChild(lines[end]!)) end++
     lines.splice(end, 0, `  ${CHOSEN}${option}`)

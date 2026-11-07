@@ -1,0 +1,16 @@
+name: check
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check-versions.py
+      - run: python3 -m unittest discover -s plugins/uehaj/skills/gh-issue-map/tools -p 'test_*.py'
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: claude plugin validate .
+      - run: claude plugin test plugins/decision-pane
