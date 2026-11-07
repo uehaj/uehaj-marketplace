@@ -56,7 +56,9 @@ const markOf = (l: string) => (Object.keys(PREFIX) as Mark[]).find(m => l.starts
 const STAMPED = / \((?:保留|承認) ([^()]*)\)\s*$/
 // The item's text: the line less its mark and its `(保留 ...)` or `(承認 ...)`.
 const textOf = (l: string) => l.slice(OPEN.length).replace(STAMPED, '').trimEnd()
-const lineOf = (l: string, item: Item) => l.startsWith(PREFIX[item.mark]) && textOf(l) === item.text
+// a stamped item also matches by its stamp, so of two settled items with the same text the pressed one changes
+const lineOf = (l: string, item: Item) =>
+  l.startsWith(PREFIX[item.mark]) && textOf(l) === item.text && (item.at === undefined || l.match(STAMPED)?.[1] === item.at)
 
 function parse(text: string): Item[] {
   const lines = text.split('\n')
