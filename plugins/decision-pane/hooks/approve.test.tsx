@@ -199,4 +199,7 @@ test('子行 `- (a) …` は選択肢のボタンになり、押すと承認し�
   expect(lines.slice(1, 6)).toEqual(['  - (a) SQLite', '  - (b) Postgres（要サーバー）', '  - 回答: 前の答え', '  - 選択: (b) Postgres（要サーバー）', '- [ ] 別件'])
   await ui.press({ key: 'done-toggle' })
   expect(JSON.stringify(await ui.find({ key: 'done-0' }))).toContain('☑ 選択')
+  await ui.press({ key: 'reopen-0' })
+  expect(file.split('\n').slice(0, 4)).toEqual(['- [ ] 保存先: どれにするか。推奨は、(a)', '  - (a) SQLite', '  - (b) Postgres（要サーバー）', '  - 回答: 前の答え'])
+  expect(await ui.find({ key: 'pick-0-0' })).toBeDefined()
 })

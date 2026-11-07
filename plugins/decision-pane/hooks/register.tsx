@@ -25,7 +25,7 @@ const T = {
   en: {
     status: (open: number, held: number) => `open ${open}${held ? ` · held ${held}` : ''}`,
     cmd: 'Show the open items of decisions.md in a pane', opened: 'Opened the Decisions pane.',
-    you: 'you', ai: 'AI', lp: ' (', sep: ', ', rp: ')', held: (n: number) => `⏸ Held ${n}`, resume: '▶ Resume', settled: (n: number) => `✅ Settled ${n}`,
+    you: 'you', ai: 'AI', lp: ' (', sep: ', ', rp: ')', held: (n: number) => `⏸ Held ${n}`, resume: '▶ Resume', reopen: '↩ Reopen', settled: (n: number) => `✅ Settled ${n}`,
     approved: 'approved', chose: 'chose', none: '✨ Nothing open', howTo: `Add a \`- [ ] text\` line to ${FILE} to list it here`,
     setup: `⚙ No ${FILE} yet. For the AI to write its questions there and get your OK and comments, CLAUDE.md needs a section (decision-pane README, "CLAUDE.md に足すもの")`,
     open: (n: number) => `📋 Open ${n}`, aiTurn: '⏳ Waiting on the AI', yourTurn: '👉 Waiting on you',
@@ -34,7 +34,7 @@ const T = {
   ja: {
     status: (open: number, held: number) => `未決 ${open}${held ? `・保留 ${held}` : ''}`,
     cmd: 'decisions.md の未決をペインに出す', opened: 'Decisions ペインを開いた。',
-    you: 'あなた', ai: 'AI', lp: '（', sep: '・', rp: '）', held: (n: number) => `⏸ 保留 ${n} 件`, resume: '▶ 戻す', settled: (n: number) => `✅ 決着 ${n} 件`,
+    you: 'あなた', ai: 'AI', lp: '（', sep: '・', rp: '）', held: (n: number) => `⏸ 保留 ${n} 件`, resume: '▶ 戻す', reopen: '↩ 未決に戻す', settled: (n: number) => `✅ 決着 ${n} 件`,
     approved: '承認', chose: '選択', none: '✨ 未決なし', howTo: `${FILE} に \`- [ ] 文面\` を足すとここに出る`,
     setup: `⚙ ${FILE} がまだ無い。AI に問いを書かせ、OK やコメントを届けるには、CLAUDE.md への追記が要る（decision-pane の README「CLAUDE.md に足すもの」）`,
     open: (n: number) => `📋 未決 ${n} 件`, aiTurn: '⏳ AI の回答待ち', yourTurn: '👉 あなたの判断待ち',
@@ -142,6 +142,16 @@ const hold = ($: Engine, item: Item) =>
 const resume = ($: Engine, item: Item) =>
   edit($, item, (lines, i) => { lines[i] = `${OPEN}${item.text}` })
 
+// Puts a settled item back to open, dropping the `- 選択:` line its option button added.
+const reopen = ($: Engine, item: Item) =>
+  edit($, item, (lines, i) => {
+    lines[i] = `${OPEN}${item.text}`
+    for (let j = i + 1; j < lines.length && isChild(lines[j]!);) {
+      if (lines[j]!.trim().startsWith(CHOSEN)) lines.splice(j, 1)
+      else j++
+    }
+  })
+
 const comment = ($: Engine, item: Item, body: string) =>
   body.trim()
     ? edit($, item, (lines, i, at) => {
@@ -216,6 +226,7 @@ export const register: Register = on => {
             <Text><Text color="success">✅</Text> {item.text}</Text>
             {item.at && <Text dimColor>{t.approved} {item.at}</Text>}
             {item.notes.map(noteLine)}
+            <Button key={`reopen-${j}`} onPress={() => reopen($, item)}>{t.reopen}</Button>
           </Box>
         ))}
       </Box>

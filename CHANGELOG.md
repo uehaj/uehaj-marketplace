@@ -5,6 +5,12 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+## [decision-pane 0.1.6] - 2026-11-07
+
+### Added
+- `decision-pane`: ↩ Reopen on each settled card puts the item back to `- [ ] text`, dropping its `(承認 …)` and
+  the `- 選択:` line an option button added; other child lines stay.
+
 ## [decision-pane 0.1.5] - 2026-11-07
 
 ### Added

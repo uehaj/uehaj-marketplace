@@ -59,7 +59,7 @@ is waiting on does not scroll away in the chat. Each item is a card whose color 
 (👉 yours, ⏳ the AI's), with the comments (💬) and answers (🤖) under it, a comment field, and its buttons:
 
 - **✔ OK** rewrites the line as `- [x] ... (承認 YYYY-MM-DD HH:MM)` and moves it to the folded ✅ settled section,
-  newest first.
+  newest first; **↩ Reopen** there puts it back to open (and drops its `- 選択:` line).
 - An **option** button, one per child line `- (a) ...`, settles the item as OK does and adds `  - 選択: (a) ...`
   under it.
 - **⏸ Hold** rewrites it as `- [~] ... (保留 YYYY-MM-DD HH:MM)` and folds it into the ⏸ held section, from which
