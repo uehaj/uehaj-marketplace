@@ -1,100 +1,103 @@
 # decision-pane
 
-作業ディレクトリかその上で最も近い `decisions.md` から未決の行をペインに一覧し、OK ボタン 1 つで承認済みに書き換える Claude Code の mod。LLM は呼ばない。
+English | [日本語](README.ja.md)
 
-![会話の右に Decisions ペインが開き、未決ごとのカードとボタン、保留・決着の欄、ステータスラインの件数が出ている](docs/screenshot.png)
+A Claude Code mod that lists the open lines of the nearest `decisions.md` (in the working directory or above it) in a pane, and rewrites one as approved with a single OK button. It calls no model.
 
-<img src="docs/screenshot-desktop.png" width="320" alt="desktop アプリでの同じペイン。カードごとにコメント欄、送るボタン、OK と保留のボタンが並ぶ">
+![The Decisions pane beside the transcript: one card per open item with OK and Hold buttons, the folded held and settled sections, and the counts in the status line](docs/screenshot.png)
 
-## 使い方
+<img src="docs/screenshot-desktop.png" width="320" alt="The same pane in the desktop app: cards with a comment field, a Send button, and OK and Hold buttons">
 
-- セッション開始時にペインが開く。端末の幅が足りず開かないときは `/decisions` で開く。
-- ステータスラインに件数（`未決 N`、保留があれば `未決 N・保留 M`）が出る。
-- 各未決に、子行（コメントと AI の回答）、選択肢のボタン（あれば）、コメント欄、OK と保留のボタンが並ぶ。コメント欄が出るのは terminal と desktop だけ（mobile には入力欄の要素がない）。
-- `decisions.md` は、作業ディレクトリから上へ、git リポジトリの最上位（`.git` フォルダのある所）までたどって最初に見つかったものを使う（サブフォルダや中の worktree に cd しても、リポジトリのものが出る）。リポジトリの外では作業ディレクトリのものだけ。リンクは読まない。
-- `decisions.md` は 3 秒ごとに見る。更新時刻が変わったときだけ読み直す。
+## Usage
 
-## decisions.md の書式（契約）
+- The pane opens when a session starts. When the terminal is too narrow for it to open, open it with `/decisions`.
+- The status line shows the counts (`open N`, or `open N · held M` when something is held).
+- Each open item shows its child lines (comments and the AI's answers), option buttons (if any), a comment field, and the OK and Hold buttons. The comment field appears only in the terminal and the desktop app (mobile has no input element).
+- The `decisions.md` used is the first one found going up from the working directory to the top of the git repository (where the `.git` folder is), so a subfolder or a worktree inside still shows the repository's. Outside a repository, only the working directory's. Symbolic links are not read.
+- `decisions.md` is checked every 3 seconds and read again only when its modification time changes.
+- The pane text is in English or Japanese: Claude Code's language from `/config` when set, else `LC_ALL` / `LANG`; English otherwise. The marks written into `decisions.md` (`承認`, `保留`, `コメント`, `回答`, `選択`) stay Japanese in every language, since they are the contract below.
 
-| 行 | 意味 |
+## The format of decisions.md (the contract)
+
+| Line | Meaning |
 |---|---|
-| 行頭が `- [ ] ` | 未決。ペインに出る |
-| 行頭が `- [x] ` | 承認済み（決着）。ペインのたたまれた決着欄に、承認の新しい順で出る |
-| 行頭が `- [~] ` | 保留。ペインのたたまれた保留欄に出る。AI の番でもあなたの番でもない |
+| starts with `- [ ] ` | Open. Shown in the pane |
+| starts with `- [x] ` | Approved (settled). Shown in the folded settled section, newest approval first |
+| starts with `- [~] ` | Held. Shown in the folded held section. Neither the AI's turn nor yours |
 
-未決の行の直後に続く、字下げした行は、その未決の子行としてペインに出す。
+Indented lines right after an open line are shown as that item's child lines.
 
-**OK** を押すと、その行を次の形に書き換え、決着欄に移す。子行とほかの行には触らない。
+**OK** rewrites the line as below and moves it to the settled section. It does not touch the child lines or any other line.
 
 ```
-- [ ] 文面
+- [ ] text
 ↓
-- [x] 文面 (承認 YYYY-MM-DD HH:MM)
+- [x] text (承認 YYYY-MM-DD HH:MM)
 ```
 
-**選択肢**: 未決の子行のうち `- (a) 説明` の形のもの（括弧の中は英字 1 文字。`(注)` や `(1)` はふつうの子行のまま）は、子行としてではなくボタンとして出る。押すと OK と同じく `- [x] … (承認 …)` に書き換え、子行の末尾に選んだものを足す。
+**Options**: child lines of the form `- (a) description` (one ASCII letter in the parentheses; `(注)` or `(1)` stay ordinary child lines) are shown as buttons instead of child lines. Pressing one rewrites the line as `- [x] … (承認 …)`, like OK, and adds the choice as the last child line.
 
 ```
-- [ ] 保存先: どれにするか。推奨は、(a)
+- [ ] Storage: which one. Recommended: (a)
   - (a) SQLite
   - (b) Postgres
-↓ (b) を押す
-- [x] 保存先: どれにするか。推奨は、(a) (承認 YYYY-MM-DD HH:MM)
+↓ press (b)
+- [x] Storage: which one. Recommended: (a) (承認 YYYY-MM-DD HH:MM)
   - (a) SQLite
   - (b) Postgres
   - 選択: (b) Postgres
 ```
 
-選択肢があっても OK は使える。OK は推奨案での承認の意味になる。
+OK still works when there are options; it means approval of the recommended one.
 
-**コメント欄**に書いて Enter を押すと、未決のまま、子行の末尾にコメントを足す。
-
-```
-- [ ] 文面
-  - 回答: ...                              ← AI が以前に書いた子行
-  - コメント YYYY-MM-DD HH:MM: 本文        ← mod が足す
-```
-
-コメントを受けた AI は、`  - 回答: ...` を子行に足して答え、必要なら `- [ ] ` の後ろの文面を書き直す。mod は未決を文面で見分けるので、文面を書き直しても子行は付いてくる。
-
-**保留**を押すと、未決を次の形に書き換え、ペインの下のたたまれた「保留」欄に移す。子行は付いてくる。保留欄を開いて **戻す** を押すと、元の `- [ ] 文面` に戻る。
+Typing in the **comment field** and pressing Enter adds the comment as the last child line, and the item stays open.
 
 ```
-- [ ] 文面
+- [ ] text
+  - 回答: ...                              ← a child line the AI wrote earlier
+  - コメント YYYY-MM-DD HH:MM: body        ← added by the mod
+```
+
+An AI that gets a comment answers by adding `  - 回答: ...` as a child line, and rewrites the text after `- [ ] ` if needed. The mod tells items apart by their text, so the child lines follow a rewritten text.
+
+**Hold** rewrites the open line as below and moves it to the folded held section below the pane, child lines and all. Open the held section and press **Resume** to put it back as `- [ ] text`.
+
+```
+- [ ] text
 ↓
-- [~] 文面 (保留 YYYY-MM-DD HH:MM)
+- [~] text (保留 YYYY-MM-DD HH:MM)
 ```
 
-決着欄を開いて **未決に戻す** を押すと、`- [x] 文面 (承認 …)` を `- [ ] 文面` に戻す。`- 選択: ` で始まる子行（選択肢のボタンで足したものも、手で書いたものも）は消し、ほかの子行は残す。
+Open the settled section and press **Reopen** to turn `- [x] text (承認 …)` back into `- [ ] text`. Child lines starting with `- 選択: ` (added by an option button or by hand) are removed; other child lines stay.
 
-時刻はローカル時刻。
+Times are local time.
 
-## AI への伝わり方
+## How a change reaches the AI
 
-この mod は AI に何も送らない。承認やコメントが AI に届くのは、Claude Code 本体の働きによる。AI が Read ツールで一度読んだファイルが外で書き換わると、Claude Code は AI が次に動くとき（あなたが何か送ったとき、バックグラウンドの処理の完了通知が来たときなど）に、その差分を AI に添える。だから AI がセッションの初めに `decisions.md` を Read ツールで読んでおけば、ボタンでの書き換えは次のやりとりで AI に届く。`cat` や `grep` など Bash で読んだだけのファイルは、この対象にならない。ボタンを押しただけでは AI は動かない。
+This mod sends nothing to the AI. Approvals and comments reach it through Claude Code itself: when a file the AI has read with the Read tool is changed from outside, Claude Code attaches the diff the next time the AI runs (when you send something, when a background task's completion notice arrives, and so on). So if the AI reads `decisions.md` with the Read tool at the start of the session, the buttons' rewrites reach it on the next exchange. Files read only through Bash, such as `cat` or `grep`, are not covered. Pressing a button alone does not make the AI run.
 
-差分を受けた AI が見るのは次のものだけ。
+From the diff, the AI only needs to look at:
 
-- 行頭の `- [x] ` と行末の `(承認 ...)` は、承認された印。子行に `- 選択: (b) ...` があればその案で、無ければ推奨案で
-- `- [ ] ` の未決の下で、最後の子行が `- コメント ` で始まっていれば、AI が答える番
-- 行頭の `- [~] ` は保留。誰の番でもないので無視してよい
+- `- [x] ` at the start of a line and `(承認 ...)` at its end mean approved: with the option in a `- 選択: (b) ...` child line if there is one, else the recommended one
+- under an open `- [ ] ` item, a last child line starting with `- コメント ` means it is the AI's turn
+- `- [~] ` at the start of a line means held: nobody's turn, safe to ignore
 
-## CLAUDE.md に足すもの
+## What to add to CLAUDE.md
 
-mod を入れただけでは、AI は `decisions.md` に問いを書かず、変更にも気づかない。CLAUDE.md（user スコープなら `~/.claude/CLAUDE.md`）に次のような項を足す。
+Installing the mod alone does not make the AI write its questions to `decisions.md` or notice the changes. Add a section like this to CLAUDE.md (`~/.claude/CLAUDE.md` for the user scope).
 
 ```markdown
-## 回答をもらっていない問いは decisions.md に書く
+## Write unanswered questions to decisions.md
 
-- ユーザーへの問い・承認待ちで、まだ回答をもらっていないものは、作業ディレクトリの `decisions.md` に追記する。
-  書式は 1 件 1 行: `- [ ] <対象>: <何を決めるか>。推奨は、<推奨案>`。補足は 2 スペース字下げの子行に書く。
-  選べる案が複数あるときは、案ごとに `  - (a) <案>` の子行を書く（ペインでボタンになる）。
-- `- [x]` の子行に `- 選択: (b) ...` があればその案で、無ければ推奨案で承認された。
-- ファイルが無ければ見出し付きで作り、`.git/info/exclude` に `decisions.md` を足してコミット対象から外す。
-- `- [x]`（承認済み）・`- [~]`（保留）の行は書き換えない。
-- セッションで最初に `decisions.md` に触れるときは、Bash ではなく Read ツールで読む。そうすると、ペインでの承認・コメントが次のやりとりで差分として届く。
+- Questions and approvals waiting on the user that have no answer yet go into `decisions.md` in the working directory.
+  One per line: `- [ ] <subject>: <what to decide>. Recommended: <option>`. Details go in child lines indented by 2 spaces.
+  When there are several options, write one `  - (a) <option>` child line per option (they become buttons in the pane).
+- A `- [x]` line with a `- 選択: (b) ...` child line was approved with that option; without one, with the recommended one.
+- If the file does not exist, create it with a heading, and add `decisions.md` to `.git/info/exclude` to keep it out of commits.
+- Do not rewrite `- [x]` (approved) or `- [~]` (held) lines.
+- The first time in a session you touch `decisions.md`, read it with the Read tool, not Bash. Then approvals and comments in the pane reach you as a diff on the next exchange.
 ```
 
-## 無保証
+## No warranty
 
-現状のまま提供する。
+Provided as is.

@@ -27,7 +27,7 @@ const T = {
     cmd: 'Show the open items of decisions.md in a pane', opened: 'Opened the Decisions pane.',
     you: 'you', ai: 'AI', lp: ' (', sep: ', ', rp: ')', held: (n: number) => `⏸ Held ${n}`, resume: '▶ Resume', reopen: '↩ Reopen', settled: (n: number) => `✅ Settled ${n}`,
     approved: 'approved', chose: 'chose', none: '✨ Nothing open', howTo: `Add a \`- [ ] text\` line to ${FILE} to list it here`,
-    setup: `⚙ No ${FILE} yet. For the AI to write its questions there and get your OK and comments, CLAUDE.md needs a section (decision-pane README, "CLAUDE.md に足すもの")`,
+    setup: `⚙ No ${FILE} yet. For the AI to write its questions there and get your OK and comments, CLAUDE.md needs a section (decision-pane README, "What to add to CLAUDE.md")`,
     open: (n: number) => `📋 Open ${n}`, aiTurn: '⏳ Waiting on the AI', yourTurn: '👉 Waiting on you',
     comment: 'Comment or question (Enter sends)', send: 'Send', hold: '⏸ Hold',
   },
