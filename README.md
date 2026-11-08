@@ -72,7 +72,7 @@ open it unasked. It calls no model and sends the AI nothing: a change reaches th
 the diff of a file the AI has read with the Read tool to the AI's next turn (your next message, or a background
 task's notice). So the AI must read `decisions.md` with Read early in the session, and something must tell it to
 write its open questions there: add the CLAUDE.md section given in
-[plugins/decision-pane/README.md](plugins/decision-pane/README.md) (Japanese), which also holds the line format. Needs
+[plugins/decision-pane/README.md](plugins/decision-pane/README.md) ([日本語](plugins/decision-pane/README.ja.md)), which also holds the line format. Needs
 `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, like the playground. Install it at the user scope and it loads in the
 desktop app's local sessions too.
 

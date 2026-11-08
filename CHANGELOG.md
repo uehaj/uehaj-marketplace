@@ -5,6 +5,10 @@ Changes to the plugins in the `uehaj-marketplace` marketplace. Versions are the 
 
 ## [Unreleased]
 
+### Changed
+- decision-pane 0.1.7: the README is in English (`README.md`) and Japanese (`README.ja.md`); the empty pane's setup
+  hint in English points to the English section, "What to add to CLAUDE.md".
+
 ### Fixed
 - `run-interactive`: a working directory or `--log` path with spaces no longer breaks the command it runs in the
   other pane.
