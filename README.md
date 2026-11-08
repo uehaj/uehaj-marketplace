@@ -1,13 +1,14 @@
 # uehaj/uehaj-marketplace
 
-Claude Code plugin marketplace by [uehaj](https://github.com/uehaj). Three plugins:
+Claude Code plugin marketplace by [uehaj](https://github.com/uehaj). Four plugins:
 `uehaj` holds the skills, so every skill is `/uehaj:<skill>`; `playground` holds function-hook
-experiments that draw in a pane; `decision-pane` lists the decisions waiting on you in a pane.
+experiments that draw in a pane; `decision-pane` lists the decisions waiting on you in a pane; `requirements-tool` is a requirements-engineering tool.
 
 ```sh
 claude plugin marketplace add uehaj/uehaj-marketplace   # or: /plugin marketplace add uehaj/uehaj-marketplace
 claude plugin install uehaj@uehaj-marketplace           # the skills
 claude plugin install playground@uehaj-marketplace      # the pane experiments
+claude plugin install requirements-tool@uehaj-marketplace  # requirements engineering (Japanese), see plugins/requirements-tool/README.md
 claude plugin install decision-pane@uehaj-marketplace   # the decisions pane
 ```
 
